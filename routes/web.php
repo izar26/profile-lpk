@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AlumniController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Siswa\SiswaAreaController;
 use App\Http\Controllers\Pegawai\PegawaiAreaController;
+use App\Http\Controllers\Siswa\SiswaTestimoniController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,12 @@ use Illuminate\Support\Facades\Route;
 
 // Rute Publik (Landing Page, Profil LPK)
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/program/{id}', [HomeController::class, 'showProgram'])->name('public.program.show');
+Route::get('/artikel/{slug}', [HomeController::class, 'showEdukasi'])->name('public.edukasi.show');
+Route::get('/verify/{id}', [App\Http\Controllers\PublicVerifyController::class, 'verify'])->name('student.verify');
+Route::post('/verify/check', [App\Http\Controllers\PublicVerifyController::class, 'check'])->name('student.verify.check');
+Route::get('/verify/pegawai/{employee}', [EmployeeController::class, 'verification'])->name('pegawai.verification.public');
+Route::post('/verify/pegawai/check', [EmployeeController::class, 'verificationCheck'])->name('pegawai.verification.check');
 
 // Rute yang HANYA bisa diakses setelah login (auth)
 // Rute 'dashboard' ini akan mengarahkan user berdasarkan role mereka
@@ -64,11 +71,8 @@ Route::post('/albums/{album}/media', [AlbumMediaController::class, 'store'])->na
 // Perhatikan: kita tidak perlu /albums/{album} di URL karena ID galeri sudah unik
 Route::delete('/galeri-media/{galeri}', [AlbumMediaController::class, 'destroy'])->name('albums.media.destroy');
 
-    Route::get('/program-pelatihan', [ProgramPelatihanController::class, 'index'])->name('program-pelatihan.index'); // <-- DIUBAH
-Route::post('/program-pelatihan', [ProgramPelatihanController::class, 'store'])->name('program-pelatihan.store'); // <-- DIUBAH
-Route::get('/program-pelatihan/{program}/edit', [ProgramPelatihanController::class, 'edit'])->name('program-pelatihan.edit'); // <-- DIUBAH
-Route::put('/program-pelatihan/{program}', [ProgramPelatihanController::class, 'update'])->name('program-pelatihan.update'); // <-- DIUBAH
-Route::delete('/program-pelatihan/{program}', [ProgramPelatihanController::class, 'destroy'])->name('program-pelatihan.destroy'); // <-- DIUBAH
+Route::resource('program-pelatihan', ProgramPelatihanController::class)
+        ->names('program-pelatihan');
 
 Route::get('/edukasi/create', [EdukasiController::class, 'create'])->name('edukasi.create'); // Tambahkan ini
 Route::get('/edukasi', [EdukasiController::class, 'index'])->name('edukasi.index');
@@ -87,9 +91,14 @@ Route::delete('/cara-daftar/{caraDaftar}', [CaraDaftarController::class, 'destro
     Route::get('/students/export-excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
     Route::get('/students/export-pdf', [StudentController::class, 'exportPdf'])->name('students.export-pdf');
     Route::get('/students/{student}/export-biodata', [StudentController::class, 'exportPdfIndividual'])->name('students.export-biodata');
+    Route::get('students/{student}/export-agreement', [StudentController::class, 'exportAgreement'])
+    ->name('students.export-agreement');
+    Route::get('students/export-id-card', [App\Http\Controllers\Admin\StudentController::class, 'exportIdCard'])->name('students.export-id-card');
 
     // 2. Generate Akun
     Route::post('/students/{student}/generate-account', [StudentController::class, 'generateAccount'])->name('students.generate-account');
+    Route::get('/students/{student}/verify', [StudentController::class, 'verification'])->name('students.verify');
+Route::post('/students/{student}/verify', [StudentController::class, 'processVerification'])->name('students.process-verify');
 
     // 3. Resource (CRUD Bawaan) - TARUH PALING BAWAH
     Route::resource('students', StudentController::class)->names('students');
@@ -100,10 +109,17 @@ Route::resource('keberangkatan', KeberangkatanController::class)
 
     Route::resource('alumni', AlumniController::class)->names('alumni')->except(['create', 'show']);
 
-    Route::get('/employees/export-excel', [EmployeeController::class, 'exportExcel'])->name('employees.export-excel');
-Route::get('/employees/export-pdf', [EmployeeController::class, 'exportPdf'])->name('employees.export-pdf');
-Route::get('/employees/{employee}/export-biodata', [EmployeeController::class, 'exportPdfIndividual'])->name('employees.export-biodata');
-Route::post('/employees/{employee}/generate-account', [EmployeeController::class, 'generateAccount'])->name('employees.generate-account');
+Route::controller(EmployeeController::class)->prefix('employees')->name('employees.')->group(function() {
+        Route::get('/export/excel', 'exportExcel')->name('export-excel');
+        Route::get('/export/pdf', 'exportPdf')->name('export-pdf');
+        Route::get('/export/biodata/{employee}', 'exportPdfIndividual')->name('export-biodata');
+        
+        // Route Cetak ID Card (Massal/Satuan)
+        Route::get('/export/id-card', 'exportIdCard')->name('export-id-card');
+        
+        // Route Generate Akun
+        Route::post('/generate-account/{employee}', 'generateAccount')->name('generate-account');
+    });
 
 // Resource Pegawai
 Route::resource('employees', EmployeeController::class)->names('employees');
@@ -132,6 +148,13 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     Route::put('/biodata', [SiswaAreaController::class, 'updateBiodata'])->name('biodata.update');
 
     Route::get('/biodata/print', [SiswaAreaController::class, 'printBiodata'])->name('biodata.print');
+
+    Route::get('/formulir', [SiswaAreaController::class, 'showFormulir'])->name('formulir.show');
+    Route::put('/formulir', [SiswaAreaController::class, 'updateFormulir'])->name('formulir.update');
+
+    Route::get('/testimoni', [SiswaTestimoniController::class, 'index'])->name('testimoni.index');
+    Route::post('/testimoni', [SiswaTestimoniController::class, 'store'])->name('testimoni.store');
+    
 });
 
 

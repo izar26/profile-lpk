@@ -6,8 +6,8 @@
 
 {{-- Alert Success --}}
 @if (session('success'))
-    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-sm">
-        {{ session('success') }}
+    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-sm flex items-center">
+        <i class="fa-solid fa-check-circle mr-2"></i> {{ session('success') }}
     </div>
 @endif
 
@@ -30,12 +30,15 @@
             </div>
             <input type="text" id="searchInput" 
                    class="pl-10 w-full border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500" 
-                   placeholder="Cari Nama / NIK...">
+                   placeholder="Cari Nama / No KTP...">
         </div>
 
         <select id="statusFilter" class="border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500 text-gray-700">
             <option value="Semua">Semua Status</option>
             <option value="Mendaftar">Mendaftar</option>
+            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+            <option value="Perlu Revisi">Perlu Revisi</option>
+            <option value="Ditolak">Ditolak</option>
             <option value="Wawancara">Wawancara</option>
             <option value="Pelatihan">Pelatihan</option>
             <option value="Magang">Magang</option>
@@ -47,36 +50,54 @@
 
     <div class="flex flex-wrap gap-3 w-full xl:w-auto justify-end">
         
-        <div class="flex rounded-md shadow-sm" role="group">
-            <a href="{{ route('admin.students.export-excel') }}" class="px-4 py-2.5 text-sm font-semibold text-green-700 bg-green-100 border border-green-200 rounded-l-lg hover:bg-green-200 focus:z-10 focus:ring-2 focus:ring-green-300 flex items-center">
-                <i class="fa-solid fa-file-excel mr-2"></i> Excel
-            </a>
-            <a href="{{ route('admin.students.export-pdf') }}" class="px-4 py-2.5 text-sm font-semibold text-red-700 bg-red-100 border border-l-0 border-red-200 rounded-r-lg hover:bg-red-200 focus:z-10 focus:ring-2 focus:ring-red-300 flex items-center">
-                <i class="fa-solid fa-file-pdf mr-2"></i> PDF
-            </a>
+        {{-- GRUP TOMBOL CETAK --}}
+        <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" @click.away="open = false" class="px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium shadow-md flex items-center transition">
+                <i class="fa-solid fa-print mr-2"></i> Menu Cetak <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
+            </button>
+            
+            {{-- Dropdown Menu --}}
+            <div x-show="open" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden" style="display: none;">
+                <div class="p-2 space-y-1">
+                    {{-- Opsi 1: Cetak Kartu Pilihan (Checkbox) --}}
+                    <button onclick="cetakKartuPilihan()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-gold-50 text-gray-700 text-sm font-medium transition flex items-center group">
+                        <span class="w-8 h-8 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center mr-3 group-hover:bg-gold-500 group-hover:text-white transition">
+                            <i class="fa-solid fa-check-double"></i>
+                        </span>
+                        <div>
+                            <div class="font-bold">Kartu (Terpilih)</div>
+                            <div class="text-xs text-gray-400">Yg dicentang saja</div>
+                        </div>
+                    </button>
+
+                    {{-- Opsi 2: Cetak Kartu Semua/Filter --}}
+                    <button onclick="cetakKartuSemua()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 text-gray-700 text-sm font-medium transition flex items-center group">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 group-hover:bg-blue-600 group-hover:text-white transition">
+                            <i class="fa-solid fa-users"></i>
+                        </span>
+                        <div>
+                            <div class="font-bold">Kartu (Semua)</div>
+                            <div class="text-xs text-gray-400">Sesuai Filter</div>
+                        </div>
+                    </button>
+
+                    <div class="border-t border-gray-100 my-1"></div>
+
+                    {{-- Laporan Excel & PDF Biasa --}}
+                    <a href="{{ route('admin.students.export-excel') }}" class="w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-gray-700 text-sm font-medium transition flex items-center">
+                        <i class="fa-solid fa-file-excel mr-3 text-green-600"></i> Laporan Excel
+                    </a>
+                    <a href="{{ route('admin.students.export-pdf') }}" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-gray-700 text-sm font-medium transition flex items-center">
+                        <i class="fa-solid fa-file-pdf mr-3 text-red-600"></i> Laporan PDF
+                    </a>
+                </div>
+            </div>
         </div>
 
+        {{-- Tombol Tambah Siswa (Tetap) --}}
         <button onclick="openModal('modalTambah')"
                 class="px-5 py-2.5 bg-gold-500 text-white rounded-xl shadow-lg hover:bg-gold-600 transition-all font-semibold flex items-center">
             <i class="fa-solid fa-plus mr-2"></i> Siswa Baru
-        </button>
-    </div>
-</div>
-
-{{-- ================= TOOLBAR BULK ACTIONS (Muncul saat checkbox dipilih) ================= --}}
-<div id="bulkActions" class="hidden bg-gold-50 border border-gold-200 p-3 rounded-xl mb-4 flex justify-between items-center animate-fade-in-down">
-    <div class="flex items-center">
-        <div class="bg-gold-100 text-gold-700 px-3 py-1 rounded-lg text-sm font-bold mr-3">
-            <span id="selectedCount">0</span> Dipilih
-        </div>
-        <span class="text-sm text-gray-600">Aksi Massal:</span>
-    </div>
-    <div class="flex gap-2">
-        <button onclick="bulkExport('excel')" class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition shadow-sm">
-            <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-        </button>
-        <button onclick="bulkExport('pdf')" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition shadow-sm">
-            <i class="fa-solid fa-file-pdf mr-1"></i> Export PDF
         </button>
     </div>
 </div>
@@ -87,12 +108,9 @@
 </div>
 
 
-{{-- ================================================================================= --}}
-{{-- ========================== MODAL GENERATE AKUN ================================== --}}
-{{-- ================================================================================= --}}
+{{-- ================= MODAL GENERATE AKUN ================= --}}
 <div id="modalGenerateAkun" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
     <div class="modal-content bg-white w-full max-w-md rounded-xl shadow-2xl p-6 scale-90 opacity-0 transition-all duration-300">
-        
         <div class="text-center mb-6">
             <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fa-solid fa-user-shield text-blue-600 text-2xl"></i>
@@ -102,7 +120,6 @@
                 Anda akan membuat akun login untuk siswa <strong id="generateNamaSiswa" class="text-gray-800">...</strong>.
             </p>
         </div>
-
         <div class="bg-gray-50 p-4 rounded-lg mb-6 text-sm border border-gray-100">
             <p class="flex justify-between mb-1">
                 <span class="text-gray-500">Password Default:</span>
@@ -113,49 +130,44 @@
                 <span class="font-bold text-blue-600">Siswa</span>
             </p>
         </div>
-
         <form id="formGenerateAkun" method="POST" action="">
             @csrf
             <div class="flex gap-3">
-                <button type="button" onclick="closeModal('modalGenerateAkun')" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition">
-                    Ya, Buat Akun
-                </button>
+                <button type="button" onclick="closeModal('modalGenerateAkun')" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition">Batal</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition">Ya, Buat Akun</button>
             </div>
         </form>
     </div>
 </div>
 
-{{-- ================================================================================= --}}
-{{-- ============================= MODAL TAMBAH SISWA ================================ --}}
-{{-- ================================================================================= --}}
+{{-- ================= MODAL TAMBAH SISWA ================= --}}
 <div id="modalTambah" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
     <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-lg scale-90 opacity-0 transition-all duration-300 overflow-y-auto max-h-[90vh]">
         <h2 class="text-xl font-bold text-gray-900 p-6 border-b border-gray-200">Tambah Siswa Baru</h2>
+        
         <form action="{{ route('admin.students.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="p-6 space-y-4">
+                
+                {{-- Info Akun Otomatis --}}
                 <div class="bg-green-50 p-3 rounded-lg border border-green-100 mb-2 flex items-start">
                     <i class="fa-solid fa-circle-check text-green-600 mt-1 mr-3"></i>
                     <div>
                         <p class="text-sm text-green-800 font-bold">Akun Login Otomatis</p>
-                        <p class="text-xs text-green-600 mt-1">
-                            Sistem akan otomatis membuatkan User Login.<br>
-                            Username: Email di bawah | Password: <strong>12345678</strong>
-                        </p>
+                        <p class="text-xs text-green-600 mt-1">Username: Email | Password: <strong>12345678</strong></p>
                     </div>
                 </div>
                 
+                {{-- Grid Input Data --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
+                        {{-- UPDATE: name="nama_lengkap" --}}
+                        <input type="text" name="nama_lengkap" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">NIK</label>
-                        <input type="text" name="NIK" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300" placeholder="16 Digit Angka">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP</label>
+                        <input type="text" name="nomor_ktp" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300" placeholder="16 Digit Angka">
                     </div>
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Program Pelatihan</label>
@@ -170,6 +182,9 @@
                         <label class="block text-sm mb-1 font-medium text-gray-700">Status</label>
                         <select name="status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
                             <option value="Mendaftar">Mendaftar</option>
+                            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                            <option value="Perlu Revisi">Perlu Revisi</option>
+                            <option value="Ditolak">Ditolak</option>
                             <option value="Wawancara">Wawancara</option>
                             <option value="Pelatihan">Pelatihan</option>
                             <option value="Magang">Magang</option>
@@ -183,16 +198,23 @@
                         <input type="email" name="email" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Telepon / WA</label>
-                        <input type="text" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">No. HP / WA</label>
+                        {{-- UPDATE: name="no_hp_peserta" --}}
+                        <input type="text" name="no_hp_peserta" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Lengkap</label>
-                    <textarea name="alamat" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300"></textarea>
+                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Domisili</label>
+                    {{-- UPDATE: name="alamat_domisili" --}}
+                    <textarea name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300"></textarea>
                 </div>
                 
-                <div x-data="{ photoPreviewUrl: null, photoFilename: '', previewPhoto(event) { 
+                {{-- CUSTOM UPLOAD FOTO DENGAN PREVIEW (AlpineJS) --}}
+                <div x-data="{ 
+                    photoPreviewUrl: null, 
+                    photoFilename: null, 
+                    previewPhoto(event) { 
                         const file = event.target.files[0];
                         if (file) {
                             this.photoFilename = file.name;
@@ -200,38 +222,47 @@
                             reader.onload = (e) => { this.photoPreviewUrl = e.target.result; };
                             reader.readAsDataURL(file);
                         } else {
-                            this.photoFilename = '';
+                            this.photoFilename = null;
                             this.photoPreviewUrl = null;
                         }
-                    } }">
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Foto Siswa</label>
-                    <div class="flex items-center gap-4">
-                        <div class="shrink-0">
-                            <img :src="photoPreviewUrl ?? 'https://ui-avatars.com/api/?background=random&name=Siswa'" 
-                                 class="h-14 w-14 rounded-full object-cover border-2 border-gold-200">
+                    } 
+                }">
+                    <label class="block text-sm mb-2 font-medium text-gray-700">Foto Siswa</label>
+                    <div class="flex items-center gap-5">
+                        <div class="shrink-0 relative group">
+                            <div class="h-16 w-16 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+                                <template x-if="photoPreviewUrl">
+                                    <img :src="photoPreviewUrl" class="h-full w-full object-cover">
+                                </template>
+                                <template x-if="!photoPreviewUrl">
+                                    <i class="fa-solid fa-user text-gray-400 text-2xl"></i>
+                                </template>
+                            </div>
                         </div>
+
                         <div class="w-full">
-                            <label for="foto_tambah" class="cursor-pointer inline-flex items-center px-4 py-2 bg-gold-50 text-gold-700 rounded-lg shadow-sm hover:bg-gold-100 transition-all duration-200 border border-gold-200 w-full justify-center">
-                                <i class="fa-solid fa-upload mr-2"></i>
-                                <span>Pilih Foto...</span>
+                            <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition-all duration-200">
+                                <i class="fa-solid fa-camera mr-2 text-gray-500"></i>
+                                <span class="text-sm font-medium">Pilih Foto...</span>
+                                <input name="foto" type="file" accept="image/*" class="hidden" @change="previewPhoto($event)">
                             </label>
-                            <input @change="previewPhoto($event)" name="foto" type="file" id="foto_tambah" class="hidden"/>
-                            <p x-text="photoFilename" class="mt-2 text-xs text-gray-600 italic"></p>
+                            <p x-show="photoFilename" x-text="photoFilename" class="mt-2 text-xs text-green-600 font-medium"></p>
+                            <p x-show="!photoFilename" class="mt-2 text-xs text-gray-400">Format: JPG, PNG (Max 2MB)</p>
                         </div>
                     </div>
                 </div>
+
             </div>
+
             <div class="flex justify-end p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg gap-2">
-                <button type="button" onclick="closeModal('modalTambah')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-medium text-gray-700">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 font-semibold">Simpan & Buat Akun</button>
+                <button type="button" onclick="closeModal('modalTambah')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-medium text-gray-700 transition">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 font-semibold shadow-md transition transform hover:-translate-y-0.5">Simpan & Buat Akun</button>
             </div>
         </form>
     </div>
 </div>
 
-{{-- ================================================================================= --}}
-{{-- =============================== MODAL EDIT SISWA ================================ --}}
-{{-- ================================================================================= --}}
+{{-- ================= MODAL EDIT SISWA ================= --}}
 <div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
     <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-lg scale-90 opacity-0 transition-all duration-300">
         <h2 class="text-xl font-bold text-gray-900 p-6 border-b border-gray-200">Edit Data Siswa</h2>
@@ -242,11 +273,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" id="edit_nama" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        {{-- UPDATE: id="edit_nama_lengkap", name="nama_lengkap" --}}
+                        <input type="text" id="edit_nama_lengkap" name="nama_lengkap" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">NIK</label>
-                        <input type="text" id="edit_nik" name="NIK" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP</label>
+                        <input type="text" id="edit_nomor_ktp" name="nomor_ktp" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
                     </div>
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Program</label>
@@ -261,6 +293,9 @@
                         <label class="block text-sm mb-1 font-medium text-gray-700">Status</label>
                         <select id="edit_status" name="status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
                             <option value="Mendaftar">Mendaftar</option>
+                            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                            <option value="Perlu Revisi">Perlu Revisi</option>
+                            <option value="Ditolak">Ditolak</option>
                             <option value="Wawancara">Wawancara</option>
                             <option value="Pelatihan">Pelatihan</option>
                             <option value="Magang">Magang</option>
@@ -274,13 +309,15 @@
                         <input type="email" id="edit_email" name="email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Telepon</label>
-                        <input type="text" id="edit_telepon" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">No. HP / WA</label>
+                        {{-- UPDATE: id="edit_no_hp_peserta", name="no_hp_peserta" --}}
+                        <input type="text" id="edit_no_hp_peserta" name="no_hp_peserta" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat</label>
-                    <textarea id="edit_alamat" name="alamat" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
+                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Domisili</label>
+                    {{-- UPDATE: id="edit_alamat_domisili", name="alamat_domisili" --}}
+                    <textarea id="edit_alamat_domisili" name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
                 </div>
                 
                 <div>
@@ -288,7 +325,6 @@
                     <div class="flex items-center gap-4">
                         <img id="edit_foto_preview" src="" class="h-14 w-14 rounded-full object-cover border-2 border-gray-200 hidden">
                         <div id="edit_foto_placeholder" class="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xl"><i class="fa-solid fa-user"></i></div>
-                        
                         <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-300 transition">
                             <i class="fa-solid fa-camera mr-2"></i> Ganti Foto
                             <input name="foto" type="file" class="hidden" onchange="previewEditFoto(this)"/>
@@ -323,77 +359,72 @@
 
 @section('scripts')
 <script>
-    // ================= AJAX SEARCH & FILTER =================
-    let timer; 
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const tableContainer = document.getElementById('tableContainer');
+   document.addEventListener('DOMContentLoaded', function () {
+        // Ambil elemen
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableContainer = document.getElementById('tableContainer');
 
-    searchInput.addEventListener('keyup', function() {
-        clearTimeout(timer);
-        timer = setTimeout(() => fetchStudents(), 500);
-    });
+        // Variable untuk Debounce (Jeda waktu ketik)
+        let debounceTimer;
 
-    statusFilter.addEventListener('change', function() {
-        fetchStudents();
-    });
+        // 1. Event Listener untuk SEARCH (KeyUp)
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchStudents();
+            }, 500); // Tunggu 500ms setelah user selesai mengetik
+        });
 
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.pagination a')) {
-            e.preventDefault();
-            let pageUrl = e.target.closest('.pagination a').href;
-            fetchStudents(pageUrl);
-        }
-    });
+        // 2. Event Listener untuk FILTER STATUS (Change)
+        statusFilter.addEventListener('change', function () {
+            fetchStudents();
+        });
 
-    function fetchStudents(url = null) {
-        let query = searchInput.value;
-        let status = statusFilter.value;
-        let fetchUrl = url ? url : `{{ route('admin.students.index') }}?search=${query}&status=${status}`;
-        tableContainer.style.opacity = '0.5';
-        fetch(fetchUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        // 3. Event Listener untuk PAGINATION (Klik Link)
+        document.addEventListener('click', function(e) {
+            const paginationLink = e.target.closest('#tableContainer .pagination a');
+            if (paginationLink) {
+                e.preventDefault();
+                const url = paginationLink.getAttribute('href');
+                fetchStudents(url);
+            }
+        });
+
+        // === FUNGSI UTAMA AJAX FETCH ===
+        function fetchStudents(url = null) {
+            let fetchUrl = url || "{{ route('admin.students.index') }}";
+            
+            const searchValue = searchInput.value;
+            const statusValue = statusFilter.value;
+
+            const urlObj = new URL(fetchUrl, window.location.origin);
+            
+            if (searchValue) {
+                urlObj.searchParams.set('search', searchValue);
+            }
+            if (statusValue && statusValue !== 'Semua') {
+                urlObj.searchParams.set('status', statusValue);
+            }
+
+            tableContainer.style.opacity = '0.5';
+
+            fetch(urlObj.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
             .then(response => response.text())
             .then(html => {
                 tableContainer.innerHTML = html;
                 tableContainer.style.opacity = '1';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tableContainer.style.opacity = '1';
             });
-    }
-
-
-    // ================= CHECKBOX & EXPORT =================
-    document.addEventListener('change', function(e) {
-        if (e.target.id === 'selectAll') {
-            document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = e.target.checked);
-            updateBulkToolbar();
-        }
-        if (e.target.classList.contains('student-checkbox')) {
-            updateBulkToolbar();
         }
     });
-
-    function updateBulkToolbar() {
-        const selected = document.querySelectorAll('.student-checkbox:checked');
-        const toolbar = document.getElementById('bulkActions');
-        const countSpan = document.getElementById('selectedCount');
-        if (selected.length > 0) {
-            toolbar.classList.remove('hidden');
-            countSpan.textContent = selected.length;
-        } else {
-            toolbar.classList.add('hidden');
-        }
-    }
-
-    function bulkExport(type) {
-        const selected = document.querySelectorAll('.student-checkbox:checked');
-        let ids = [];
-        selected.forEach(cb => ids.push(cb.value));
-        
-        let url = '';
-        if (type === 'excel') url = "{{ route('admin.students.export-excel') }}";
-        if (type === 'pdf') url = "{{ route('admin.students.export-pdf') }}";
-
-        window.location.href = url + '?ids=' + ids.join(',');
-    }
 
     // ================= MODAL FUNCTIONS =================
     function loadEditStudent(id) {
@@ -404,13 +435,15 @@
         fetch(`/admin/students/${id}/edit`)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('edit_nama').value = data.nama;
-                document.getElementById('edit_nik').value = data.NIK;
+                // UPDATE FIELD MAPPING SESUAI DATABASE BARU
+                // Pastikan key object data.nama_field sesuai dengan response controller
+                document.getElementById('edit_nama_lengkap').value = data.nama_lengkap; // Update ke nama_lengkap
+                document.getElementById('edit_nomor_ktp').value = data.nomor_ktp;
                 document.getElementById('edit_program').value = data.program_pelatihan_id;
                 document.getElementById('edit_status').value = data.status;
                 document.getElementById('edit_email').value = data.email;
-                document.getElementById('edit_telepon').value = data.telepon;
-                document.getElementById('edit_alamat').value = data.alamat;
+                document.getElementById('edit_no_hp_peserta').value = data.no_hp_peserta;
+                document.getElementById('edit_alamat_domisili').value = data.alamat_domisili;
 
                 const imgPreview = document.getElementById('edit_foto_preview');
                 const imgPlaceholder = document.getElementById('edit_foto_placeholder');
@@ -454,6 +487,46 @@
         document.getElementById('formGenerateAkun').action = url;
         document.getElementById('generateNamaSiswa').textContent = nama;
         openModal('modalGenerateAkun');
+    }
+
+    // --- FUNGSI CETAK KARTU ---
+    
+    // 1. Cetak Berdasarkan Checkbox (Pilihan)
+    function cetakKartuPilihan() {
+        // Ambil semua checkbox yang dicentang
+        const selected = document.querySelectorAll('.student-checkbox:checked');
+        
+        if (selected.length === 0) {
+            alert('Pilih minimal satu siswa pada tabel untuk mencetak kartu.');
+            return;
+        }
+
+        // Ambil ID dari checkbox value
+        let ids = [];
+        selected.forEach((checkbox) => {
+            ids.push(checkbox.value);
+        });
+
+        // Redirect ke route export dengan parameter ids
+        const url = `{{ route('admin.students.export-id-card') }}?ids=${ids.join(',')}`;
+        window.open(url, '_blank');
+    }
+
+    // 2. Cetak Semua (Berdasarkan Filter saat ini)
+    function cetakKartuSemua() {
+        // Ambil nilai filter saat ini
+        const search = document.getElementById('searchInput').value;
+        const status = document.getElementById('statusFilter').value;
+
+        // Build URL
+        let url = `{{ route('admin.students.export-id-card') }}?mode=all`;
+        if (search) url += `&search=${search}`;
+        if (status && status !== 'Semua') url += `&status=${status}`;
+
+        // Konfirmasi jika data banyak
+        if(confirm('Apakah Anda yakin ingin mencetak ID Card untuk semua data yang tampil saat ini?')) {
+            window.open(url, '_blank');
+        }
     }
 </script>
 @endsection

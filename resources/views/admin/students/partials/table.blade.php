@@ -3,23 +3,25 @@
         <thead class="bg-gray-50">
             <tr>
                 <th class="w-10 px-6 py-3">
-                    <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-gold-600 focus:ring-gold-500">
+                    {{-- <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-gold-600 focus:ring-gold-500"> --}}
                 </th>
                 <th class="w-1/4 px-6 py-3 text-left text-xs text-gray-500 uppercase">Siswa</th>
                 <th class="w-1/5 px-6 py-3 text-left text-xs text-gray-500 uppercase">Akun Login</th>
                 <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase">Program</th>
                 <th class="w-1/5 px-6 py-3 text-left text-xs text-gray-500 uppercase">Kontak</th>
                 <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase">Status</th>
-                <th class="w-1/6 px-6 py-3"></th>
+                <th class="w-1/6 px-6 py-3 text-right">Aksi</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse ($students as $student)
-                <tr class="hover:bg-gray-50 transition">
+                {{-- Highlight baris jika status Menunggu Verifikasi --}}
+                <tr class="{{ $student->status == 'Menunggu Verifikasi' ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50' }} transition">
                     <td class="px-6 py-4">
                         <input type="checkbox" name="selected_ids[]" value="{{ $student->id }}" class="student-checkbox rounded border-gray-300 text-gold-600 focus:ring-gold-500">
                     </td>
 
+                    {{-- KOLOM SISWA --}}
                     <td class="px-6 py-4">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
@@ -27,19 +29,22 @@
                                     <img class="h-10 w-10 rounded-full object-cover border border-gray-200" src="{{ asset('storage/' . $student->foto) }}" alt="">
                                 @else
                                     <div class="h-10 w-10 rounded-full bg-gold-100 flex items-center justify-center text-gold-600 font-bold">
-                                        {{ substr($student->nama, 0, 1) }}
+                                        {{ substr($student->nama_lengkap, 0, 1) }}
                                     </div>
                                 @endif
                             </div>
                             <div class="ml-4 max-w-[150px]">
-                                <div class="text-sm font-medium text-gray-900 truncate" title="{{ $student->nama }}">
-                                    {{ $student->nama }}
+                                <div class="text-sm font-medium text-gray-900 truncate" title="{{ $student->nama_lengkap }}">
+                                    {{ $student->nama_lengkap }}
                                 </div>
-                                <div class="text-xs text-gray-500 truncate">NIK: {{ $student->NIK ?? '-' }}</div>
+                                <div class="text-xs text-gray-500 truncate">
+                                    ID: {{ $student->nomor_ktp ?? '-' }}
+                                </div>
                             </div>
                         </div>
                     </td>
 
+                    {{-- KOLOM AKUN LOGIN --}}
                     <td class="px-6 py-4">
                         @if($student->user)
                             <div class="flex items-center max-w-[150px]">
@@ -56,7 +61,7 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                     Belum Ada Akun
                                 </span>
-                                <button onclick="siapkanGenerateAkun('{{ route('admin.students.generate-account', $student) }}', '{{ $student->nama }}')" 
+                                <button onclick="siapkanGenerateAkun('{{ route('admin.students.generate-account', $student) }}', '{{ $student->nama_lengkap }}')" 
                                         class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
                                     <i class="fa-solid fa-key mr-1"></i> Buat Akun
                                 </button>
@@ -64,22 +69,30 @@
                         @endif
                     </td>
 
+                    {{-- KOLOM PROGRAM --}}
                     <td class="px-6 py-4 max-w-[150px]">
                         <div class="text-sm text-gray-700 font-medium truncate" title="{{ $student->program->judul ?? 'Belum Memilih' }}">
                             {{ $student->program->judul ?? 'Belum Memilih' }}
                         </div>
                     </td>
 
+                    {{-- KOLOM KONTAK --}}
                     <td class="px-6 py-4 max-w-[150px]">
                         <div class="text-sm text-gray-900 truncate" title="{{ $student->email ?? '-' }}">{{ $student->email ?? '-' }}</div>
-                        <div class="text-xs text-gray-500 truncate">{{ $student->telepon ?? '-' }}</div>
+                        <div class="text-xs text-gray-500 truncate">
+                            {{ $student->no_hp_peserta ?? '-' }}
+                        </div>
                     </td>
 
+                    {{-- KOLOM STATUS --}}
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                             @if($student->status == 'Mendaftar') bg-gray-100 text-gray-800
+                            @elseif($student->status == 'Menunggu Verifikasi') bg-yellow-200 text-yellow-800 animate-pulse
+                            @elseif($student->status == 'Perlu Revisi') bg-orange-100 text-orange-800
+                            @elseif($student->status == 'Wawancara') bg-purple-100 text-purple-800
                             @elseif($student->status == 'Pelatihan') bg-blue-100 text-blue-800
-                            @elseif($student->status == 'Magang') bg-purple-100 text-purple-800
+                            @elseif($student->status == 'Magang') bg-indigo-100 text-indigo-800
                             @elseif($student->status == 'Kerja') bg-green-100 text-green-800
                             @elseif($student->status == 'Alumni') bg-gold-100 text-gold-800 border border-gold-200
                             @else bg-red-100 text-red-800 @endif">
@@ -87,18 +100,42 @@
                         </span>
                     </td>
 
+                    {{-- KOLOM AKSI --}}
                     <td class="px-6 py-4 text-right text-sm font-medium space-x-2 whitespace-nowrap">
-                        <a href="{{ route('admin.students.export-biodata', $student) }}" target="_blank" class="text-gray-500 hover:text-red-600" title="Download Biodata PDF">
-                            <i class="fa-solid fa-file-pdf"></i>
-                        </a>
-                        
-                        <a href="{{ route('admin.students.show', $student) }}" class="text-blue-600 hover:text-blue-900 font-bold" title="Lihat Data Lengkap">
-                            Detail
-                        </a>
-                        
-                        <button onclick="loadEditStudent({{ $student->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                        
-                        <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ $student->nama }}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        @if($student->status == 'Menunggu Verifikasi')
+                            {{-- Tombol Verifikasi (Prioritas) --}}
+                            <a href="{{ route('admin.students.verify', $student->id) }}" class="inline-flex items-center px-3 py-1.5 bg-gold-500 text-white text-xs font-bold rounded-lg hover:bg-gold-600 shadow-sm transition transform hover:-translate-y-0.5">
+                                <i class="fa-solid fa-clipboard-check mr-1.5"></i> VERIFIKASI
+                            </a>
+                            {{-- Tombol PDF Tetap Muncul (Untuk Cek Data Fisik) --}}
+                            <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank" class="text-red-600 hover:text-red-800" title="Cetak Biodata PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('admin.students.export-id-card', ['ids' => $student->id]) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 mr-1" title="Cetak ID Card">
+    <i class="fa-solid fa-id-card"></i>
+</a>
+
+                            {{-- Tombol PDF --}}
+                            <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank" class="text-red-600 hover:text-red-800 mr-1" title="Cetak Biodata PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </a>
+
+                            <a href="{{ route('admin.students.export-agreement', $student->id) }}" target="_blank" class="text-green-600 hover:text-green-800 mr-1" title="Cetak Surat Perjanjian">
+    <i class="fa-solid fa-file-contract"></i>
+</a>
+
+                            {{-- Tombol Detail --}}
+                            <a href="{{ route('admin.students.show', $student) }}" class="text-blue-600 hover:text-blue-900 font-bold" title="Lihat Data Lengkap">
+                                Detail
+                            </a>
+                            
+                            {{-- Tombol Edit --}}
+                            <button onclick="loadEditStudent({{ $student->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                            
+                            {{-- Tombol Hapus --}}
+                            <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ $student->nama_lengkap }}')" class="text-red-600 hover:text-red-900">Hapus</button>
+                        @endif
                     </td>
                 </tr>
             @empty

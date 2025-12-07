@@ -5,35 +5,111 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
     use HasFactory;
 
-    // Tambahkan semua field baru ke $fillable
     protected $fillable = [
-        'user_id', 'program_pelatihan_id', 'NIK', 'nama', 'email', 'telepon', 'alamat', 
-        'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'status', 'foto',
-        // Field Baru:
-        'agama', 'golongan_darah', 'nama_ayah', 'nama_ibu', 'pekerjaan_ayah', 'pekerjaan_ibu',
-        'no_hp_ortu', 'sekolah_asal', 'tahun_lulus', 'kota', 'provinsi', 'kode_pos'
+        'user_id', 
+        'program_pelatihan_id', 
+        
+        // Header
+        'foto',
+
+        // Data Pribadi
+        'nama_lengkap', // [UPDATED] Sesuai Migrasi
+        'tempat_lahir', 
+        'tanggal_lahir', 
+        'jenis_kelamin',
+        'tinggi_badan', 
+        'berat_badan',
+        'alamat_ktp', 
+        'kota_ktp', 
+        'provinsi_ktp',
+        'alamat_domisili',
+        'status_pernikahan', 
+        'agama',
+        
+        // Identitas & Kontak
+        'nomor_ktp', 
+        'nomor_kk',       // [Cite: Lampiran/Data Keluarga]
+        'nomor_paspor', 
+        'nomor_npwp',
+        'email', 
+        'golongan_darah',
+        'no_hp_peserta', 
+        'no_hp_ortu',
+
+        // Pertanyaan Khusus
+        'pernah_bekerja', // [NEW] Boolean field
+
+        // Lampiran
+        'file_ktp', 
+        'file_kk', 
+        'file_ijazah', 
+        'file_sertifikat_jlpt',
+        'file_rekomendasi_sekolah', 
+        'file_izin_ortu',
+
+        // Tanda Tangan
+        'kota_pembuatan', // [NEW] Untuk isian kota di atas ttd
+
+        // System
+        'status', 
+        'admin_note', 
+        'verified_at'
     ];
 
-    protected $casts = ['tanggal_lahir' => 'date'];
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'verified_at' => 'datetime',
+        'pernah_bekerja' => 'boolean', // Casting otomatis ke true/false
+    ];
 
-    public function program(): BelongsTo { return $this->belongsTo(ProgramPelatihan::class, 'program_pelatihan_id'); }
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    // --- RELASI ---
 
-    // ============================================================
-    // 🧠 LOGIKA HITUNG KELENGKAPAN DATA (ACCESSOR)
-    // ============================================================
+    public function program(): BelongsTo 
+    { 
+        return $this->belongsTo(ProgramPelatihan::class, 'program_pelatihan_id'); 
+    }
+    
+    public function user(): BelongsTo 
+    { 
+        return $this->belongsTo(User::class); 
+    }
+
+    public function educations(): HasMany 
+    { 
+        return $this->hasMany(StudentEducation::class, 'student_id'); 
+    }
+
+    public function families(): HasMany 
+    { 
+        return $this->hasMany(StudentFamily::class, 'student_id'); 
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(StudentExperience::class, 'student_id');
+    }
+
+    public function alumni()
+    {
+        return $this->hasOne(Alumni::class);
+    }
+
+    // --- ACCESSOR KELENGKAPAN DATA (LOGIKA BARU) ---
     public function getDataCompletionAttribute()
     {
-        // Daftar field yang dianggap "Wajib Dilengkapi" agar dianggap 100%
+        // Daftar field wajib sesuai Formulir Hachimitsu
         $fieldsToCheck = [
-            'NIK', 'nama', 'email', 'telepon', 'alamat', 
-            'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 
-            'agama', 'nama_ibu', 'nama_ayah', 'sekolah_asal'
+            'nama_lengkap', 
+            'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+            'alamat_ktp', 'alamat_domisili', 
+            'nomor_ktp', 'email', 'no_hp_peserta',
+            'file_ktp', 'file_kk', 'file_ijazah', 'foto'
         ];
 
         $total = count($fieldsToCheck);
@@ -45,15 +121,19 @@ class Student extends Model
             }
         }
 
-        // Hitung Persentase
-        $percentage = ($filled / $total) * 100;
+        // Cek relasi (Opsional: Tambahkan logika jika wajib mengisi minimal 1 keluarga/pendidikan)
+        // Contoh sederhana:
+        // if ($this->families()->count() > 0) $filled++; 
+        // $total++; // Jangan lupa tambah total jika nambah kriteria
+
+        $percentage = ($total > 0) ? ($filled / $total) * 100 : 0;
 
         return [
             'filled' => $filled,
             'total' => $total,
             'percentage' => round($percentage),
             'is_complete' => $filled === $total,
-            'text' => "$filled / $total"
+            'text' => "$filled / $total Field Utama Terisi"
         ];
     }
 }

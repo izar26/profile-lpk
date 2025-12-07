@@ -10,21 +10,14 @@ class LpkProfile extends Model
 
     // Izinkan semua kolom ini diisi
     protected $fillable = [
-        'nama_lpk',
-        'logo',
-        'deskripsi_singkat',
-        'tagline', // <-- BARU
-        'alamat',
-        'google_map_embed', // <-- BARU
-        'email_lpk',
-        'website_url', // <-- BARU
-        'telepon_lpk',
-        'nomor_wa', // <-- BARU
-        'visi',
-        'misi',
-        'facebook_url', // <-- BARU
-        'instagram_url', // <-- BARU
-        'tiktok_url', // <-- BARU
-        'youtube_url', // <-- BARU
-    ];
+    'nama_lpk', 'nama_pimpinan', 'nomor_sk', // [BARU]
+    'logo', 'gambar_hero', 'gambar_tentang',
+    'gambar_auth', 'background_kartu',
+    'deskripsi_singkat', 'tagline',
+    'alamat', 'google_map_embed',
+    'email_lpk', 'website_url',
+    'telepon_lpk', 'nomor_wa',
+    'visi', 'misi',
+    'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url',
+];
 }

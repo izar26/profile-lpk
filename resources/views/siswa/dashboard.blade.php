@@ -3,153 +3,132 @@
 @section('header', 'Dashboard Siswa')
 
 @section('content')
+<div class="max-w-4xl mx-auto space-y-6">
 
-    {{-- 
-        BAGIAN 1: NOTIFIKASI KELENGKAPAN DATA 
-        Hanya muncul jika user sudah terhubung dengan data siswa 
-        TAPI datanya belum lengkap (is_complete = false)
-    --}}
-    @if(Auth::user()->student && !Auth::user()->student->data_completion['is_complete'])
-        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded-r-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fa-solid fa-circle-exclamation text-orange-400 text-xl"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-orange-700 font-bold">
-                        Data Diri Belum Lengkap
-                    </p>
-                    <p class="text-xs text-orange-600 mt-1">
-                        Baru terisi <strong>{{ Auth::user()->student->data_completion['text'] }}</strong> ({{ Auth::user()->student->data_completion['percentage'] }}%). 
-                        Mohon lengkapi data untuk keperluan administrasi dan sertifikat.
-                    </p>
-                </div>
-            </div>
-            <div class="ml-auto pl-3">
-                <a href="{{ route('siswa.biodata.edit') }}" 
-                   class="whitespace-nowrap px-4 py-2 bg-orange-100 text-orange-700 text-xs font-bold rounded-lg hover:bg-orange-200 transition-colors">
-                    Lengkapi Sekarang <i class="fa-solid fa-arrow-right ml-1"></i>
-                </a>
-            </div>
+    {{-- HEADER SAMBUTAN --}}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Halo, {{ Auth::user()->name }}! 👋</h2>
+            <p class="text-gray-500">Selamat datang di portal pendaftaran LPK Hachimitsu.</p>
         </div>
-    @endif
+        @if(Auth::user()->student && Auth::user()->student->foto)
+            <img src="{{ asset('storage/' . Auth::user()->student->foto) }}" class="w-16 h-16 rounded-full object-cover border-2 border-gold-200">
+        @else
+            <div class="w-16 h-16 bg-gold-100 rounded-full flex items-center justify-center text-gold-600 text-xl font-bold">
+                {{ substr(Auth::user()->name, 0, 1) }}
+            </div>
+        @endif
+    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        {{-- BAGIAN 2: KARTU PROFIL SINGKAT --}}
-        <div class="md:col-span-1">
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 text-center h-full">
-                <div class="relative w-24 h-24 mx-auto mb-4">
-                    {{-- Cek apakah data siswa dan foto ada --}}
-                    @if(Auth::user()->student && Auth::user()->student->foto)
-                        <img src="{{ asset('storage/' . Auth::user()->student->foto) }}" 
-                             class="w-24 h-24 rounded-full object-cover border-4 border-gold-100 shadow-sm">
-                    @else
-                        {{-- Avatar Default (Inisial Nama) --}}
-                        <div class="w-24 h-24 rounded-full bg-gold-50 flex items-center justify-center text-gold-500 text-3xl font-bold border-4 border-gold-100 shadow-sm">
-                            {{ substr(Auth::user()->name, 0, 1) }}
-                        </div>
-                    @endif
-                </div>
-                
-                <h3 class="text-lg font-bold text-gray-900">{{ Auth::user()->name }}</h3>
-                
-                {{-- Cek NIK --}}
-                <p class="text-sm text-gray-500 mt-1">
-                    {{ Auth::user()->student->NIK ?? 'NIK Belum Terhubung' }}
-                </p>
-                
-                <div class="mt-6">
-                    {{-- Badge Status --}}
-                    @if(Auth::user()->student)
-                        <span class="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide
-                            @if(Auth::user()->student->status == 'Mendaftar') bg-gray-100 text-gray-600
-                            @elseif(Auth::user()->student->status == 'Pelatihan') bg-blue-100 text-blue-700
-                            @elseif(Auth::user()->student->status == 'Magang') bg-purple-100 text-purple-700
-                            @elseif(Auth::user()->student->status == 'Kerja') bg-green-100 text-green-700
-                            @elseif(Auth::user()->student->status == 'Alumni') bg-gold-100 text-gold-700
-                            @else bg-red-100 text-red-700 @endif">
-                            {{ Auth::user()->student->status }}
-                        </span>
-                    @else
-                        <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                            Data Belum Terhubung
-                        </span>
-                    @endif
-                </div>
+    {{-- LOGIKA ALERT STATUS (FEEDBACK LOOP) --}}
+    @php
+        $student = Auth::user()->student;
+        $status = $student ? $student->status : 'Kosong';
+    @endphp
 
-                <div class="mt-6 border-t border-gray-100 pt-4">
-                    <a href="{{ route('siswa.biodata.edit') }}" class="text-sm text-gold-600 hover:text-gold-800 font-semibold hover:underline">
-                        Edit Profil Saya
+    {{-- 1. JIKA BELUM MENGISI SAMA SEKALI --}}
+    @if(!$student)
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0"><i class="fa-solid fa-circle-exclamation text-red-500"></i></div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-red-800">Anda belum melengkapi data diri!</h3>
+                    <p class="text-sm text-red-700 mt-1">Silakan klik menu <strong>Formulir Pendaftaran</strong> untuk mulai mengisi data.</p>
+                    <a href="{{ route('siswa.formulir.show') }}" class="mt-3 inline-block bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700">
+                        Isi Formulir Sekarang
                     </a>
                 </div>
             </div>
         </div>
 
-        {{-- BAGIAN 3: KARTU INFORMASI PROGRAM --}}
-        <div class="md:col-span-2">
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 h-full flex flex-col">
-                <h3 class="text-lg font-serif font-bold text-gold-500 mb-6 border-b border-gray-100 pb-2">
-                    Program Pelatihan Saya
-                </h3>
-                
-                {{-- Logika Pengecekan Program --}}
-                @if(Auth::user()->student && Auth::user()->student->program)
-                    
-                    <div class="flex flex-col sm:flex-row items-start gap-6">
-                        {{-- Gambar Program --}}
-                        @if(Auth::user()->student->program->gambar_fitur)
-                            <img src="{{ asset('storage/' . Auth::user()->student->program->gambar_fitur) }}" 
-                                 class="w-full sm:w-32 h-32 rounded-xl object-cover shadow-sm border border-gray-100">
-                        @else
-                            <div class="w-full sm:w-32 h-32 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 border border-gray-100">
-                                <i class="fa-solid fa-image text-3xl"></i>
-                            </div>
-                        @endif
-
-                        <div class="flex-1">
-                            <h4 class="text-xl font-bold text-gray-900 mb-2">
-                                {{ Auth::user()->student->program->judul }}
-                            </h4>
-                            <p class="text-gray-600 text-sm leading-relaxed mb-4">
-                                {{ Auth::user()->student->program->deskripsi_singkat }}
-                            </p>
-                            
-                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-100 inline-flex items-start gap-2">
-                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                                <p class="text-xs text-blue-700">
-                                    <strong>Info:</strong> Hubungi admin jika terjadi kesalahan pemilihan program atau ingin mengajukan perpindahan jurusan.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                @elseif(Auth::user()->student)
-                    {{-- Case: Data siswa ada, tapi program_id null --}}
-                    <div class="flex-1 flex flex-col items-center justify-center text-center py-10">
-                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                            <i class="fa-solid fa-chalkboard-user text-gray-300 text-3xl"></i>
-                        </div>
-                        <h4 class="text-gray-900 font-bold">Belum Memilih Program</h4>
-                        <p class="text-gray-500 text-sm mt-1">Anda belum terdaftar di program pelatihan manapun.</p>
-                    </div>
-
-                @else
-                    {{-- Case: Data siswa belum dihubungkan sama sekali --}}
-                    <div class="flex-1 flex flex-col items-center justify-center text-center py-10 bg-red-50 rounded-xl border border-red-100 border-dashed">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                            <i class="fa-solid fa-link-slash text-red-400 text-3xl"></i>
-                        </div>
-                        <h4 class="text-lg font-bold text-red-800 mb-2">Akun Belum Terhubung</h4>
-                        <p class="text-sm text-red-600 max-w-md mx-auto px-4">
-                            Halo <strong>{{ Auth::user()->name }}</strong>, akun login Anda belum dihubungkan dengan data siswa di database kami. 
-                            <br><br>
-                            Silakan hubungi Admin LPK untuk verifikasi data.
-                        </p>
-                    </div>
-                @endif
+    {{-- 2. STATUS: MENDAFTAR (DRAFT) --}}
+    @elseif($status == 'Mendaftar')
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0"><i class="fa-solid fa-pen-to-square text-blue-500"></i></div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-blue-800">Pendaftaran Belum Selesai</h3>
+                    <p class="text-sm text-blue-700 mt-1">Anda masih dalam tahap pengisian formulir. Segera lengkapi dan kirim data Anda.</p>
+                    <a href="{{ route('siswa.formulir.show') }}" class="mt-3 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700">
+                        Lanjutkan Pengisian
+                    </a>
+                </div>
             </div>
         </div>
 
-    </div>
+    {{-- 3. STATUS: MENUNGGU VERIFIKASI (LOCK) --}}
+    @elseif($status == 'Menunggu Verifikasi')
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-r shadow-sm text-center">
+            <i class="fa-solid fa-clock text-4xl text-yellow-500 mb-3"></i>
+            <h3 class="text-lg font-bold text-yellow-800">Data Sedang Diverifikasi</h3>
+            <p class="text-yellow-700 mt-2">Terima kasih telah mengirim formulir. Tim Admin kami sedang memeriksa kelengkapan data Anda.<br>Mohon tunggu 1x24 jam. Kami akan memberitahu Anda jika ada update.</p>
+            <div class="mt-4">
+                <a href="{{ route('siswa.formulir.show') }}" class="text-yellow-800 font-bold hover:underline">Lihat Formulir Saya (Read Only)</a>
+            </div>
+        </div>
+
+    {{-- 4. STATUS: PERLU REVISI (URGENT) --}}
+    @elseif($status == 'Perlu Revisi')
+        <div class="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-r shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0"><i class="fa-solid fa-triangle-exclamation text-3xl text-orange-600 mt-1"></i></div>
+                <div class="ml-4 w-full">
+                    <h3 class="text-lg font-bold text-orange-800">Formulir Perlu Perbaikan!</h3>
+                    <p class="text-orange-700 mt-1">Admin telah memeriksa data Anda dan menemukan beberapa hal yang perlu diperbaiki.</p>
+                    
+                    {{-- CATATAN ADMIN (PENTING) --}}
+                    @if($student->admin_note)
+                        <div class="mt-4 bg-white p-4 rounded-lg border border-orange-200">
+                            <p class="text-xs text-gray-500 font-bold uppercase mb-1">Pesan dari Admin:</p>
+                            <p class="text-gray-800 font-medium"><i class="fa-solid fa-quote-left text-orange-300 mr-2"></i>{{ $student->admin_note }}</p>
+                        </div>
+                    @endif
+
+                    <div class="mt-5">
+                        <a href="{{ route('siswa.formulir.show') }}" class="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700 shadow-md transition transform hover:-translate-y-1">
+                            <i class="fa-solid fa-wrench mr-2"></i> Perbaiki Formulir Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {{-- 5. STATUS: WAWANCARA (LOLOS ADMIN) --}}
+    @elseif($status == 'Wawancara')
+        <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r shadow-sm text-center">
+            <i class="fa-solid fa-check-circle text-4xl text-green-500 mb-3"></i>
+            <h3 class="text-lg font-bold text-green-800">Selamat! Anda Lolos Seleksi Administrasi</h3>
+            <p class="text-green-700 mt-2">Data Anda telah terverifikasi. Anda berhak melanjutkan ke tahap Wawancara.</p>
+            <div class="mt-4 p-4 bg-white rounded-lg border border-green-200 inline-block text-left">
+                <p class="text-sm text-gray-600"><i class="fa-solid fa-calendar mr-2"></i> Jadwal Wawancara: <strong>Menunggu Info Admin</strong></p>
+                <p class="text-sm text-gray-600 mt-1"><i class="fa-solid fa-shirt mr-2"></i> Pakaian: <strong>Bebas Rapi / Kemeja</strong></p>
+            </div>
+            <div class="mt-6">
+                <a href="{{ route('siswa.biodata.print') }}" class="bg-green-600 text-white px-6 py-2 rounded-full font-bold hover:bg-green-700 transition">
+                    <i class="fa-solid fa-print mr-2"></i> Cetak Kartu Bukti
+                </a>
+            </div>
+        </div>
+
+    {{-- 6. STATUS: DITOLAK --}}
+    @elseif($status == 'Ditolak')
+        <div class="bg-gray-100 border-l-4 border-gray-500 p-6 rounded-r shadow-sm text-center grayscale">
+            <i class="fa-solid fa-circle-xmark text-4xl text-gray-500 mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-800">Mohon Maaf</h3>
+            <p class="text-gray-600 mt-2">Berdasarkan hasil verifikasi, kualifikasi Anda belum sesuai dengan standar LPK Hachimitsu saat ini.</p>
+            @if($student->admin_note)
+                <p class="text-sm text-gray-500 mt-2 bg-white p-2 rounded border border-gray-200 inline-block">Alasan: {{ $student->admin_note }}</p>
+            @endif
+            <p class="text-gray-500 mt-4 text-sm">Jangan patah semangat dan coba lagi di kesempatan berikutnya.</p>
+        </div>
+        
+    @else
+        {{-- STATUS LAIN (Pelatihan, Magang, dll) --}}
+        <div class="bg-gold-50 border border-gold-200 p-6 rounded-xl text-center">
+            <h3 class="text-xl font-bold text-gold-800">Status Anda: {{ $status }}</h3>
+            <p class="text-gold-600 mt-2">Semoga sukses mengikuti program pelatihan!</p>
+        </div>
+    @endif
+
+</div>
 @endsection

@@ -38,50 +38,17 @@
                         <img src="{{ asset('storage/' . $lpkProfile->logo) }}" alt="Logo" class="h-9 w-auto object-contain">
                     @endif
                     
-                    <span class="font-serif text-2xl font-bold text-gray-900 tracking-wide hidden sm:block">
+                    {{-- <span class="font-serif text-2xl font-bold text-gray-900 tracking-wide hidden sm:block">
                         @if($lpkProfile && $lpkProfile->nama_lpk)
                             {{ $lpkProfile->nama_lpk }}
                         @else
                             LPK <span class="text-gold-500">PROFILE</span>
                         @endif
-                    </span>
+                    </span> --}}
                 </a>
             </div>
 
             <div class="flex items-center gap-4">
-
-                <button data-dropdown-toggle="dropdown-notifications" title="Notifikasi"
-                        class="relative flex items-center p-2 rounded-full text-gray-600 hover:bg-gold-50 hover:text-gold-600 transition-all duration-200">
-                    <i class="fa-solid fa-bell text-xl"></i>
-                    @if($unreadCount > 0)
-                    <span class="absolute top-1 right-1 h-5 w-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white">
-                        {{ $unreadCount }}
-                    </span> 
-                    @endif
-                </button>
-
-                <div id="dropdown-notifications" class="hidden z-50 mt-4 bg-white rounded-xl shadow-lg border border-gray-100 w-80">
-                    <div class="px-4 py-3 border-b border-gray-200">
-                        <p class="text-gray-900 font-semibold">Notifikasi</p>
-                    </div>
-                    <div class="py-2 max-h-96 overflow-y-auto">
-                        @forelse($notifications as $notification)
-                            <a href="{{ $notification->data['url'] ?? '#' }}" class="block px-4 py-3 hover:bg-gold-50 transition-all duration-200">
-                                <p class="font-medium text-gray-800">{{ $notification->data['pesan'] }}</p>
-                                <p class="text-sm text-gray-600">{{ $notification->data['nama'] }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                            </a>
-                        @empty
-                            <div class="px-4 py-6 text-center">
-                                <i class="fa-solid fa-check-double fa-2x text-gray-300 mb-2"></i>
-                                <p class="text-sm text-gray-500">Tidak ada notifikasi baru.</p>
-                            </div>
-                        @endforelse
-                    </div>
-                    <div class="px-4 py-2 border-t border-gray-200 text-center">
-                        <a href="#" class="text-sm text-gold-600 hover:underline">Lihat semua notifikasi</a>
-                    </div>
-                </div>
 
                 <button class="flex items-center text-sm bg-gold-500 text-white rounded-full p-1.5 shadow-gold focus:ring-4 focus:ring-gold-200 transition"
                         data-dropdown-toggle="dropdown-user">
@@ -232,11 +199,19 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('siswa.biodata.edit') }}" class="flex items-center p-2 rounded-lg group transition-colors duration-200 {{ request()->routeIs('siswa.biodata.*') ? 'bg-gold-500 text-white font-bold shadow-md' : 'text-gray-700 hover:bg-gold-50 hover:text-gold-600' }}">
-                            <i class="fa-solid fa-user-pen w-5 h-5 transition duration-75 {{ request()->routeIs('siswa.biodata.*') ? 'text-white' : 'text-gray-500 group-hover:text-gold-600' }}"></i>
-                            <span class="ms-3">Biodata Saya</span>
+                        <a href="{{ route('siswa.formulir.show') }}" class="flex items-center p-2 rounded-lg group transition-colors duration-200 {{ request()->routeIs('siswa.formulir.*') ? 'bg-gold-500 text-white font-bold shadow-md' : 'text-gray-700 hover:bg-gold-50 hover:text-gold-600' }}">
+                            <i class="fa-solid fa-file-pen w-5 h-5 transition duration-75 {{ request()->routeIs('siswa.formulir.*') ? 'text-white' : 'text-gray-500 group-hover:text-gold-600' }}"></i>
+                            <span class="ms-3">Biodata & Dokumen</span>
                         </a>
                     </li>
+                    @if(Auth::user()->student && Auth::user()->student->status == 'Alumni')
+                        <li>
+                            <a href="{{ route('siswa.testimoni.index') }}" class="flex items-center p-2 rounded-lg group transition-colors duration-200 {{ request()->routeIs('siswa.testimoni.*') ? 'bg-gold-500 text-white font-bold shadow-md' : 'text-gray-700 hover:bg-gold-50 hover:text-gold-600' }}">
+                                <i class="fa-solid fa-comment-dots w-5 h-5 transition duration-75 {{ request()->routeIs('siswa.testimoni.*') ? 'text-white' : 'text-gray-500 group-hover:text-gold-600' }}"></i>
+                                <span class="ms-3">Testimoni Saya</span>
+                            </a>
+                        </li>
+                    @endif
                 @endif
 
                 @endauth

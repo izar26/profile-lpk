@@ -3,94 +3,87 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProgramPelatihan; // <-- DIUBAH
+use App\Models\ProgramPelatihan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class ProgramPelatihanController extends Controller // <-- DIUBAH
+class ProgramPelatihanController extends Controller
 {
-    // Menampilkan halaman utama
     public function index()
     {
-        $programs = ProgramPelatihan::latest()->paginate(10); // <-- DIUBAH
-        // Arahkan ke view baru
-        return view('admin.program-pelatihan.index', compact('programs')); // <-- DIUBAH
+        $programs = ProgramPelatihan::latest()->paginate(10);
+        return view('admin.program-pelatihan.index', compact('programs'));
     }
 
-    // Menyimpan program baru
+    // [BARU] Halaman Tambah
+    public function create()
+    {
+        return view('admin.program-pelatihan.create');
+    }
+
     public function store(Request $request)
     {
-        // (Logika validasi tidak berubah, tapi kita tambahkan session)
-        try {
-            $validatedData = $request->validate([
-                'judul' => 'required|string|max:255',
-                'deskripsi_singkat' => 'required|string|max:255',
-                'deskripsi_lengkap' => 'nullable|string',
-                'gambar_fitur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                'status' => 'required|in:Akan Datang,Buka Pendaftaran,Berjalan,Selesai',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors())->withInput()->with('openModalTambah', true);
-        }
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi_singkat' => 'required|string|max:255',
+            'deskripsi_lengkap' => 'nullable|string', // Ini akan berisi HTML dari Trix
+            'gambar_fitur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'status' => 'required|in:Akan Datang,Buka Pendaftaran,Berjalan,Selesai',
+        ]);
 
-        $data = $validatedData;
+        $data = $request->except('gambar_fitur');
 
         if ($request->hasFile('gambar_fitur')) {
-            $path = $request->file('gambar_fitur')->store('program_pelatihan', 'public'); // <-- Ganti nama folder
+            $path = $request->file('gambar_fitur')->store('program_penelitian', 'public');
             $data['gambar_fitur'] = $path;
         }
 
-        ProgramPelatihan::create($data); // <-- DIUBAH
+        ProgramPelatihan::create($data);
 
-        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program baru berhasil ditambahkan.'); // <-- DIUBAH
+        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program baru berhasil ditambahkan.');
     }
 
-    // Mengambil data untuk modal "Edit"
-    public function edit(ProgramPelatihan $program) // <-- DIUBAH
+    // [UBAH] Halaman Edit (Bukan JSON lagi)
+    public function edit(ProgramPelatihan $program_pelatihan) 
     {
-        return response()->json($program);
+        // Note: Laravel resource binding mungkin menggunakan nama variabel $program_pelatihan 
+        // atau $program tergantung route list. Kita gunakan variabel umum $program di view.
+        return view('admin.program-pelatihan.edit', ['program' => $program_pelatihan]);
     }
 
-    // Update program
-    public function update(Request $request, ProgramPelatihan $program) // <-- DIUBAH
+    public function update(Request $request, ProgramPelatihan $program_pelatihan)
     {
-        try {
-            $validatedData = $request->validate([
-                'judul' => 'required|string|max:255',
-                'deskripsi_singkat' => 'required|string|max:255',
-                'deskripsi_lengkap' => 'nullable|string',
-                'gambar_fitur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                'status' => 'required|in:Akan Datang,Buka Pendaftaran,Berjalan,Selesai',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // [PENTING] Ganti 'editProgramId' agar cocok dengan script
-            return redirect()->back()->withErrors($e->errors())->withInput()->with('openModalEdit', true)->with('editProgramId', $program->id);
-        }
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi_singkat' => 'required|string|max:255',
+            'deskripsi_lengkap' => 'nullable|string',
+            'gambar_fitur' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'status' => 'required|in:Akan Datang,Buka Pendaftaran,Berjalan,Selesai',
+        ]);
 
-        $data = $validatedData;
+        $data = $request->except('gambar_fitur');
 
         if ($request->hasFile('gambar_fitur')) {
-            if ($program->gambar_fitur) {
-                Storage::disk('public')->delete($program->gambar_fitur);
+            if ($program_pelatihan->gambar_fitur) {
+                Storage::disk('public')->delete($program_pelatihan->gambar_fitur);
             }
-            $path = $request->file('gambar_fitur')->store('program_pelatihan', 'public'); // <-- Ganti nama folder
+            $path = $request->file('gambar_fitur')->store('program_penelitian', 'public');
             $data['gambar_fitur'] = $path;
         }
 
-        $program->update($data);
+        $program_pelatihan->update($data);
 
-        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program berhasil diperbarui.'); // <-- DIUBAH
+        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program berhasil diperbarui.');
     }
 
-    // Menghapus program
-    public function destroy(ProgramPelatihan $program) // <-- DIUBAH
+    public function destroy(ProgramPelatihan $program_pelatihan)
     {
-        if ($program->gambar_fitur) {
-            Storage::disk('public')->delete($program->gambar_fitur);
+        if ($program_pelatihan->gambar_fitur) {
+            Storage::disk('public')->delete($program_pelatihan->gambar_fitur);
         }
+        
+        $program_pelatihan->delete();
 
-        $program->delete();
-
-        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program berhasil dihapus.'); // <-- DIUBAH
+        return redirect()->route('admin.program-pelatihan.index')->with('success', 'Program berhasil dihapus.');
     }
 }

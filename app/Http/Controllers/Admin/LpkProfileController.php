@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,12 +11,15 @@ class LpkProfileController extends Controller
 {
     /**
      * Tampilkan form edit.
-     * Kita gunakan 'firstOrCreate' untuk memastikan 
-     * baris data (dengan ID 1) selalu ada.
      */
     public function edit()
     {
-        $profile = LpkProfile::firstOrCreate(['id' => 1]);
+        // Pastikan data ID 1 selalu ada
+        $profile = LpkProfile::firstOrCreate(['id' => 1], [
+            'nama_lpk' => 'LPK Baru',
+            // Default value lain jika perlu
+        ]);
+        
         return view('admin.lpk-profile.edit', compact('profile'));
     }
 
@@ -28,40 +32,60 @@ class LpkProfileController extends Controller
 
         $request->validate([
             'nama_lpk' => 'required|string|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'nama_pimpinan' => 'nullable|string|max:255',
+            'nomor_sk' => 'nullable|string|max:255',
+            
+            // Validasi Gambar
+            'logo' => 'nullable|image|max:2048',
+            'gambar_hero' => 'nullable|image|max:4096',
+            'gambar_tentang' => 'nullable|image|max:2048',
+            'gambar_auth' => 'nullable|image|max:4096',
+            
+            // [BARU] Validasi Background Kartu (Max 4MB)
+            'background_kartu' => 'nullable|image|max:4096',
+            
             'deskripsi_singkat' => 'nullable|string',
-            'tagline' => 'nullable|string|max:255', // <-- BARU
+            'tagline' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
-            'google_map_embed' => 'nullable|string', // <-- BARU
+            'google_map_embed' => 'nullable|string',
             'email_lpk' => 'nullable|email',
-            'website_url' => 'nullable|url|max:255', // <-- BARU (pakai rule 'url')
+            'website_url' => 'nullable|url|max:255',
             'telepon_lpk' => 'nullable|string|max:20',
-            'nomor_wa' => 'nullable|string|max:20', // <-- BARU
+            'nomor_wa' => 'nullable|string|max:20',
             'visi' => 'nullable|string',
             'misi' => 'nullable|string',
-            'facebook_url' => 'nullable|string|max:255', // <-- BARU
-            'instagram_url' => 'nullable|string|max:255', // <-- BARU
-            'tiktok_url' => 'nullable|string|max:255', // <-- BARU
-            'youtube_url' => 'nullable|string|max:255', // <-- BARU
+            'facebook_url' => 'nullable|string|max:255',
+            'instagram_url' => 'nullable|string|max:255',
+            'tiktok_url' => 'nullable|string|max:255',
+            'youtube_url' => 'nullable|string|max:255',
         ]);
 
-        // Ambil semua data yang divalidasi
-        $data = $request->except('logo');
+        // Kecualikan semua input file dari $data awal
+        $data = $request->except(['logo', 'gambar_hero', 'gambar_tentang', 'gambar_auth', 'background_kartu']);
 
-        // Logika Upload Logo (Sama seperti foto profil user)
-        if ($request->hasFile('logo')) {
-            // Hapus logo lama jika ada
-            if ($profile->logo) {
-                Storage::disk('public')->delete($profile->logo);
+        // Helper function untuk upload
+        $uploadImage = function($field, $folder) use ($request, $profile, &$data) {
+            if ($request->hasFile($field)) {
+                // Hapus file lama jika ada
+                if ($profile->$field) {
+                    Storage::disk('public')->delete($profile->$field);
+                }
+                // Simpan file baru
+                $data[$field] = $request->file($field)->store($folder, 'public');
             }
-            // Simpan logo baru di 'storage/app/public/logo_lpk'
-            $path = $request->file('logo')->store('logo_lpk', 'public');
-            $data['logo'] = $path;
-        }
+        };
 
-        // Logika update() ini sudah otomatis menangani semua field baru
-        $profile->update($data); 
+        // Jalankan upload untuk setiap gambar
+        $uploadImage('logo', 'logo_lpk');
+        $uploadImage('gambar_hero', 'logo_lpk');    
+        $uploadImage('gambar_tentang', 'logo_lpk');
+        $uploadImage('gambar_auth', 'logo_lpk'); 
+        
+        // [BARU] Upload Background Kartu
+        $uploadImage('background_kartu', 'logo_lpk'); 
 
-        return redirect()->route('admin.lpk-profile.edit')->with('success', 'Profil LPK berhasil diperbarui.');
+        $profile->update($data);
+
+        return redirect()->route('admin.lpk-profile.edit')->with('success', 'Profil LPK dan aset gambar berhasil diperbarui.');
     }
 }

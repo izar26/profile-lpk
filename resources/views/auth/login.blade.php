@@ -1,3 +1,13 @@
+@php
+    // Ambil data profile jika belum tersedia dari controller
+    $profile = $profile ?? \App\Models\LpkProfile::first();
+    
+    // Logika Background: Gunakan gambar dari DB jika ada, jika tidak gunakan default Unsplash
+    $bgImage = $profile && $profile->gambar_auth 
+                ? asset('storage/' . $profile->gambar_auth) 
+                : 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop';
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -9,7 +19,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,30 +48,32 @@
 
     <div class="min-h-screen flex">
         
+        <!-- Bagian Kiri: Gambar Background -->
         <div class="hidden lg:flex w-1/2 relative bg-gray-900 items-center justify-center overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop" 
+            {{-- Menggunakan variabel $bgImage yang sudah di-set di atas --}}
+            <img src="{{ $bgImage }}" 
                  alt="Background" 
-                 class="absolute inset-0 w-full h-full object-cover opacity-40">
+                 class="absolute inset-0 w-full h-full object-cover opacity-50 transition-transform duration-[20s] hover:scale-110 ease-linear">
             
-            <div class="absolute inset-0 bg-gradient-to-br from-gold-900/80 to-black/60"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-gold-900/90 to-black/70"></div>
 
-            <div class="relative z-10 text-center p-12 text-white max-w-lg">
+            <div class="relative z-10 text-center p-12 text-white max-w-lg animate-fade-in-up">
                 <div class="mb-6 flex justify-center">
                     @if($profile && $profile->logo)
                         <img src="{{ asset('storage/' . $profile->logo) }}" alt="Logo LPK" 
-                             class="h-24 w-auto object-contain drop-shadow-2xl">
+                             class="h-28 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300">
                     @else
-                        <div class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-gold-400/50 shadow-xl">
-                            <i class="fa-solid fa-building-columns text-4xl text-gold-400"></i>
+                        <div class="w-24 h-24 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-gold-400/50 shadow-xl">
+                            <i class="fa-solid fa-building-columns text-5xl text-gold-400"></i>
                         </div>
                     @endif
                 </div>
 
-                <h1 class="font-serif text-4xl md:text-5xl font-bold mb-4 text-white tracking-wide leading-tight">
+                {{-- <h1 class="font-serif text-4xl md:text-5xl font-bold mb-4 text-white tracking-wide leading-tight drop-shadow-lg">
                     {{ $profile->nama_lpk ?? 'LPK PROFILE' }}
-                </h1>
+                </h1> --}}
 
-                <p class="text-lg text-gray-300 leading-relaxed font-light">
+                <p class="text-lg text-gray-200 leading-relaxed font-light drop-shadow-md">
                     {{ $profile->tagline ?? 'Sistem Informasi Manajemen Pelatihan & Penempatan Tenaga Kerja ke Jepang.' }}
                 </p>
             </div>
@@ -70,13 +81,14 @@
             <div class="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"></div>
         </div>
 
+        <!-- Bagian Kanan: Form Login -->
         <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white relative">
             
             <div class="w-full max-w-md space-y-8">
                 
                 <div class="text-center lg:text-left">
                     <h2 class="font-serif text-4xl font-bold text-gray-900 mb-2">Selamat Datang</h2>
-                    <p class="text-gray-500">Silakan masuk untuk mengakses akun Anda.</p>
+                    <p class="text-gray-500">Silakan masuk untuk mengakses dashboard Anda.</p>
                 </div>
 
                 <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -86,8 +98,8 @@
 
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-gold-600">
                                 <i class="fa-solid fa-envelope text-gray-400"></i>
                             </div>
                             <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" 
@@ -99,8 +111,8 @@
 
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-gold-600">
                                 <i class="fa-solid fa-lock text-gray-400"></i>
                             </div>
                             <input id="password" type="password" name="password" required autocomplete="current-password" 
@@ -115,6 +127,7 @@
                             <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-gold-600 shadow-sm focus:ring-gold-500" name="remember">
                             <span class="ms-2 text-sm text-gray-600">Ingat saya</span>
                         </label>
+                        
                     </div>
 
                     <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gold-600 hover:bg-gold-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 transition-all transform hover:-translate-y-0.5">
@@ -122,7 +135,17 @@
                     </button>
                 </form>
 
-                <div class="mt-10 text-center text-xs text-gray-400">
+                {{-- [Tambahan] Bagian Belum Punya Akun --}}
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Belum punya akun? 
+                        <a href="{{ route('register') }}" class="font-bold text-gold-600 hover:text-gold-800 hover:underline transition-colors">
+                            Daftar sebagai Siswa
+                        </a>
+                    </p>
+                </div>
+
+                <div class="mt-8 text-center text-xs text-gray-400 border-t border-gray-100 pt-6">
                     &copy; {{ date('Y') }} {{ $profile->nama_lpk ?? config('app.name') }}. All rights reserved.
                     <br>Sistem Informasi Manajemen LPK
                 </div>
