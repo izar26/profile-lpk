@@ -76,15 +76,23 @@
                 <div class="sticky top-28 space-y-6">
                     
                     <div class="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-gold-500 text-center">
-                        <h3 class="font-serif text-xl font-bold text-gray-900 mb-2">Tertarik Bergabung?</h3>
-                        <p class="text-sm text-gray-500 mb-6">Segera amankan kuota Anda dan konsultasikan persyaratan pendaftaran sekarang.</p>
-                        
-                        <a href="https://wa.me/{{ $profile->nomor_wa ?? '' }}?text=Halo%20Admin,%20saya%20tertarik%20dengan%20program%20{{ urlencode($program->judul) }}." 
-                           target="_blank"
-                           class="block w-full py-4 bg-gold-600 text-white rounded-xl font-bold shadow-lg hover:bg-gold-700 hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                           <i class="fa-brands fa-whatsapp text-xl"></i> Daftar via WhatsApp
-                        </a>
-                    </div>
+    <h3 class="font-serif text-xl font-bold text-gray-900 mb-2">Tertarik Bergabung?</h3>
+    <p class="text-sm text-gray-500 mb-6">Segera amankan kuota Anda dan konsultasikan persyaratan pendaftaran sekarang.</p>
+
+    <!-- Tombol WhatsApp -->
+    <a href="https://wa.me/{{ $profile->nomor_wa ?? '' }}?text=Halo%20Admin,%20saya%20tertarik%20dengan%20program%20{{ urlencode($program->judul) }}."
+       target="_blank"
+       class="block w-full py-4 bg-gold-600 text-white rounded-xl font-bold shadow-lg hover:bg-gold-700 hover:shadow-xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2 mb-3">
+        <i class="fa-brands fa-whatsapp text-xl"></i> Daftar via WhatsApp
+    </a>
+
+    <!-- Tombol Daftar Langsung -->
+    <a href="{{ route('register') }}"
+       class="block w-full py-4 bg-gray-800 text-white rounded-xl font-bold shadow-lg hover:bg-gray-900 hover:shadow-xl transition transform hover:-translate-y-1">
+        Daftar Langsung
+    </a>
+</div>
+
 
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h4 class="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">Ringkasan</h4>
