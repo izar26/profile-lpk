@@ -48,12 +48,13 @@ class RegisteredUserController extends Controller
             // 3. Buat Data Siswa (Status: Mendaftar)
             // Kita simpan Nama, Email, dan Telepon dari form registrasi ke tabel students
             Student::create([
-                'user_id' => $user->id,
-                'nama' => $request->name,
-                'email' => $request->email,
-                'telepon' => $request->telepon, // Simpan No WA
-                'status' => 'Mendaftar', // Status Awal
-            ]);
+    'user_id' => $user->id,
+    'nama_lengkap' => $request->name,
+    'email' => $request->email,
+    'no_hp_peserta' => $request->telepon,
+    'status' => 'Mendaftar',
+]);
+
 
             // Trigger Event Registered (Bawaan Laravel)
             event(new Registered($user));

@@ -85,8 +85,7 @@
                 <a href="#alur" class="hover:text-gold-600 transition">Cara Daftar</a>
                 <a href="#instruktur" class="hover:text-gold-600 transition">Pengajar</a>
                 <a href="#testimoni" class="hover:text-gold-600 transition">Testimoni</a>
-                <a href="#Keberangkatan" class="hover:text-gold-600 transition">Keberangkatan</a>
-                
+<a href="#keberangkatan" class="hover:text-gold-600 transition">Keberangkatan</a>                
                 @auth
                     <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full shadow-lg hover:bg-gold-600 transition transform hover:-translate-y-0.5">Dashboard</a>
                 @else

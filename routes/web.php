@@ -54,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); // <-- INI YANG BARU
 
     Route::resource('users', UserController::class);
-
+        
     Route::get('/lpk-profile', [LpkProfileController::class, 'edit'])->name('lpk-profile.edit');
     Route::post('/lpk-profile', [LpkProfileController::class, 'update'])->name('lpk-profile.update');
    
