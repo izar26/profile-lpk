@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EmployeesExport;
 
 class EmployeeController extends Controller
 {
@@ -142,41 +144,14 @@ class EmployeeController extends Controller
     // --- FITUR EXPORT EXCEL ---
     public function exportExcel(Request $request)
     {
+        // 1. Tangkap ID jika ada (dari checklist pilihan)
         $ids = $request->ids ? explode(',', $request->ids) : null;
         
-        $query = Employee::latest();
-        if ($ids) {
-            $query->whereIn('id', $ids);
-        }
-        $employees = $query->get();
+        // 2. Buat nama file dengan timestamp agar unik
+        $filename = 'laporan-pegawai-lpk-' . date('d-m-Y-H-i') . '.xlsx';
 
-        $filename = "data-pegawai-lpk.csv";
-        $handle = fopen('php://output', 'w');
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-        fputcsv($handle, [
-            'Nama Lengkap', 'NIP', 'Jabatan', 'Status Kepegawaian', 
-            'Email', 'Telepon', 'Alamat', 'Kota', 'Provinsi'
-        ]);
-
-        foreach ($employees as $emp) {
-            fputcsv($handle, [
-                $emp->nama,
-                "'".$emp->nip,
-                $emp->jabatan,
-                $emp->status_kepegawaian,
-                $emp->email,
-                $emp->telepon,
-                $emp->alamat,
-                $emp->kota,
-                $emp->provinsi
-            ]);
-        }
-
-        fclose($handle);
-        exit;
+        // 3. Download file Excel menggunakan class EmployeesExport
+        return Excel::download(new EmployeesExport($ids), $filename);
     }
 
     // --- FITUR EXPORT PDF LAPORAN ---

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash; 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StudentsExport;
 
 class StudentController extends Controller
 {
@@ -222,37 +224,14 @@ class StudentController extends Controller
     // --- FITUR EXPORT EXCEL ---
     public function exportExcel(Request $request)
     {
+        // 1. Tangkap ID jika ada (dari checklist)
         $ids = $request->ids ? explode(',', $request->ids) : null;
         
-        $query = Student::with('program');
-        if ($ids) {
-            $query->whereIn('id', $ids);
-        }
-        $students = $query->get();
+        // 2. Tentukan nama file
+        $filename = 'laporan-siswa-lpk-' . date('d-m-Y-H-i') . '.xlsx';
 
-        $filename = "data-siswa-lpk.csv";
-        $handle = fopen('php://output', 'w');
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-        // Update Header CSV sesuai kolom baru
-        fputcsv($handle, ['Nama Lengkap', 'No KTP', 'Program', 'Status', 'Email', 'No HP', 'Alamat Domisili']);
-
-        foreach ($students as $student) {
-            fputcsv($handle, [
-                $student->nama_lengkap, // [UPDATED]
-                "'".$student->nomor_ktp,
-                $student->program->judul ?? '-',
-                $student->status,
-                $student->email,
-                $student->no_hp_peserta, // [UPDATED]
-                $student->alamat_domisili
-            ]);
-        }
-
-        fclose($handle);
-        exit;
+        // 3. Download file Excel menggunakan class StudentsExport
+        return Excel::download(new StudentsExport($ids), $filename);
     }
 
     // --- FITUR EXPORT PDF (List Laporan) ---

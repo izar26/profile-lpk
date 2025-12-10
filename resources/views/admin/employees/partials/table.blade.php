@@ -96,38 +96,77 @@
                     </td>
 
                     {{-- KOLOM AKSI --}}
-                    <td class="px-6 py-4 text-right text-sm font-medium space-x-1 whitespace-nowrap">
-                        
-                        {{-- Tombol ID Card (Satuan) --}}
-                        <a href="{{ route('admin.employees.export-id-card', ['ids' => $emp->id]) }}" target="_blank" 
-                           class="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded" title="Cetak ID Card">
-                            <i class="fa-solid fa-id-card"></i>
-                        </a>
+<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
 
-                        {{-- Tombol PDF Biodata --}}
-                        <a href="{{ route('admin.employees.export-biodata', $emp) }}" target="_blank" 
-                           class="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded" title="Cetak Biodata">
-                            <i class="fa-solid fa-file-pdf"></i>
-                        </a>
+    <div x-data="{ open: false }" class="relative">
+        <button @click="open = !open"
+            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+            Aksi
+            <i class="fa-solid fa-caret-down ml-1"></i>
+        </button>
 
-                        {{-- Tombol Detail --}}
-                        <a href="{{ route('admin.employees.show', $emp) }}" 
-                           class="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded font-bold" title="Detail">
-                           Detail
-                        </a>
+        <!-- Dropdown -->
+        <div x-show="open"
+             @click.away="open = false"
+             x-transition.origin.top.right
+             class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border border-gray-100 z-50">
 
-                        {{-- Tombol Edit --}}
-                        <button onclick="loadEdit({{ $emp->id }})" 
-                                class="text-slate-600 hover:text-slate-900 p-1 hover:bg-slate-100 rounded">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        
-                        {{-- Tombol Hapus --}}
-                        <button onclick="siapkanHapus('{{ route('admin.employees.destroy', $emp) }}', '{{ $emp->nama }}')" 
-                                class="text-rose-600 hover:text-rose-900 p-1 hover:bg-rose-50 rounded">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
+            <ul class="py-1 text-sm">
+
+                {{-- ID CARD --}}
+                <li>
+                    <a href="{{ route('admin.employees.export-id-card', ['ids' => $emp->id]) }}" 
+                       target="_blank"
+                       class="flex items-center px-4 py-2 hover:bg-gray-100">
+                        <i class="fa-solid fa-id-card mr-2 text-indigo-600"></i>
+                        Cetak ID Card
+                    </a>
+                </li>
+
+                {{-- BIODATA PDF --}}
+                <li>
+                    <a href="{{ route('admin.employees.export-biodata', $emp) }}" 
+                       target="_blank"
+                       class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
+                        <i class="fa-solid fa-file-pdf mr-2"></i>
+                        Biodata PDF
+                    </a>
+                </li>
+
+                {{-- DETAIL --}}
+                <li>
+                    <a href="{{ route('admin.employees.show', $emp) }}" 
+                       class="flex items-center px-4 py-2 hover:bg-gray-100 text-blue-600 font-semibold">
+                        <i class="fa-solid fa-circle-info mr-2"></i>
+                        Detail
+                    </a>
+                </li>
+
+                {{-- EDIT --}}
+                <li>
+                    <button onclick="loadEdit({{ $emp->id }})"
+                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100">
+                        <i class="fa-solid fa-pen-to-square mr-2 text-slate-600"></i>
+                        Edit
+                    </button>
+                </li>
+
+                {{-- HAPUS --}}
+                <li>
+                    <button onclick="siapkanHapus('{{ route('admin.employees.destroy', $emp) }}', '{{ $emp->nama }}')"
+                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-rose-600">
+                        <i class="fa-solid fa-trash mr-2"></i>
+                        Hapus
+                    </button>
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+
+</td>
+
                 </tr>
             @empty
                 <tr>

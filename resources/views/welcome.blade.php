@@ -65,47 +65,72 @@
 <body class="font-sans text-gray-700 antialiased bg-white" x-data="landingPage()">
 
     <nav x-data="{ scrolled: false, mobileMenu: false }" 
-         @scroll.window="scrolled = (window.pageYOffset > 20)"
-         :class="scrolled ? 'bg-white shadow-md py-2' : 'bg-white/90 backdrop-blur-sm py-4'"
-         class="fixed w-full z-50 transition-all duration-300 border-b border-gold-100">
-        <div class="container mx-auto px-6 flex justify-between items-center">
+     @scroll.window="scrolled = (window.pageYOffset > 20)"
+     :class="scrolled ? 'bg-white shadow-md py-2' : 'bg-white/90 backdrop-blur-sm py-4'"
+     class="fixed w-full z-50 transition-all duration-300 border-b border-gold-100">
+    <div class="container mx-auto px-6 flex justify-between items-center">
+        
+        <a href="#" class="flex items-center gap-3 group">
+            @if($profile && $profile->logo)
+                <img src="{{ asset('storage/' . $profile->logo) }}" class="h-10 w-auto object-contain group-hover:scale-105 transition">
+            @endif
+        </a>
+
+        <div class="hidden md:flex items-center gap-8 font-medium text-sm">
+            <a href="#beranda" class="hover:text-gold-600 transition">Beranda</a>
+            <a href="#tentang" class="hover:text-gold-600 transition">Tentang Kami</a>
+            <a href="#program" class="hover:text-gold-600 transition">Program</a>
+            <a href="#edukasi" class="hover:text-gold-600 transition">Artikel</a>
+            <a href="#galeri" class="hover:text-gold-600 transition">Galeri</a>
+            <a href="#alur" class="hover:text-gold-600 transition">Cara Daftar</a>
             
-            <a href="#" class="flex items-center gap-3 group">
-                @if($profile && $profile->logo)
-                    <img src="{{ asset('storage/' . $profile->logo) }}" class="h-10 w-auto object-contain group-hover:scale-105 transition">
-                @endif
-            </a>
-
-            <div class="hidden md:flex items-center gap-8 font-medium text-sm">
-                <a href="#beranda" class="hover:text-gold-600 transition">Beranda</a>
-                <a href="#tentang" class="hover:text-gold-600 transition">Tentang Kami</a>
-                <a href="#program" class="hover:text-gold-600 transition">Program</a>
-                <a href="#edukasi" class="hover:text-gold-600 transition">Artikel</a>
-                <a href="#galeri" class="hover:text-gold-600 transition">Galeri</a>
-                <a href="#alur" class="hover:text-gold-600 transition">Cara Daftar</a>
+            {{-- [PERBAIKAN] Menu Pengajar hanya muncul jika ada data --}}
+            @if(isset($employees) && $employees->count() > 0)
                 <a href="#instruktur" class="hover:text-gold-600 transition">Pengajar</a>
-                <a href="#testimoni" class="hover:text-gold-600 transition">Testimoni</a>
-<a href="#keberangkatan" class="hover:text-gold-600 transition">Keberangkatan</a>                
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full shadow-lg hover:bg-gold-600 transition transform hover:-translate-y-0.5">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="px-5 py-2 border border-gold-500 text-gold-600 rounded-full hover:bg-gold-500 hover:text-white transition">Masuk</a>
-                @endauth
-            </div>
+            @endif
 
-            <button @click="mobileMenu = !mobileMenu" class="md:hidden text-gray-700 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+            <a href="#testimoni" class="hover:text-gold-600 transition">Testimoni</a>
+            
+            {{-- [PERBAIKAN] Menu Keberangkatan hanya muncul jika ada data --}}
+            @if(isset($keberangkatans) && $keberangkatans->count() > 0)
+                <a href="#keberangkatan" class="hover:text-gold-600 transition">Keberangkatan</a>
+            @endif
+            
+            @auth
+                <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full shadow-lg hover:bg-gold-600 transition transform hover:-translate-y-0.5">Dashboard</a>
+            @else
+                <a href="{{ route('login') }}" class="px-5 py-2 border border-gold-500 text-gold-600 rounded-full hover:bg-gold-500 hover:text-white transition">Masuk</a>
+            @endauth
         </div>
 
-        <div x-show="mobileMenu" class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
-            <div class="flex flex-col p-4 gap-4 text-center font-medium">
-                <a href="#beranda" @click="mobileMenu = false">Beranda</a>
-                <a href="#tentang" @click="mobileMenu = false">Tentang Kami</a>
-                <a href="#program" @click="mobileMenu = false">Program</a>
-                <a href="#galeri" @click="mobileMenu = false">Galeri</a>
+        <button @click="mobileMenu = !mobileMenu" class="md:hidden text-gray-700 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <div x-show="mobileMenu" class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
+        <div class="flex flex-col p-4 gap-4 text-center font-medium">
+            <a href="#beranda" @click="mobileMenu = false">Beranda</a>
+            <a href="#tentang" @click="mobileMenu = false">Tentang Kami</a>
+            <a href="#program" @click="mobileMenu = false">Program</a>
+            <a href="#galeri" @click="mobileMenu = false">Galeri</a>
+            
+            {{-- [PERBAIKAN MOBILE] Tambahkan menu Pengajar di Mobile juga --}}
+            @if(isset($employees) && $employees->count() > 0)
+                <a href="#instruktur" @click="mobileMenu = false">Pengajar</a>
+            @endif
+
+            {{-- [PERBAIKAN MOBILE] Tambahkan menu Keberangkatan di Mobile --}}
+            @if(isset($keberangkatans) && $keberangkatans->count() > 0)
+                <a href="#keberangkatan" @click="mobileMenu = false">Keberangkatan</a>
+            @endif
+
+            @auth
+                <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full font-bold">Dashboard</a>
+            @else
                 <a href="{{ route('login') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full font-bold">Masuk / Daftar</a>
-            </div>
+            @endauth
         </div>
-    </nav>
+    </div>
+</nav>
 
   <section id="beranda" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div class="absolute top-0 right-0 w-2/3 h-full bg-gold-50 skew-x-12 transform translate-x-32 z-0"></div>

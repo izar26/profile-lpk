@@ -100,43 +100,101 @@
                         </span>
                     </td>
 
-                    {{-- KOLOM AKSI --}}
-                    <td class="px-6 py-4 text-right text-sm font-medium space-x-2 whitespace-nowrap">
-                        @if($student->status == 'Menunggu Verifikasi')
-                            {{-- Tombol Verifikasi (Prioritas) --}}
-                            <a href="{{ route('admin.students.verify', $student->id) }}" class="inline-flex items-center px-3 py-1.5 bg-gold-500 text-white text-xs font-bold rounded-lg hover:bg-gold-600 shadow-sm transition transform hover:-translate-y-0.5">
-                                <i class="fa-solid fa-clipboard-check mr-1.5"></i> VERIFIKASI
-                            </a>
-                            {{-- Tombol PDF Tetap Muncul (Untuk Cek Data Fisik) --}}
-                            <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank" class="text-red-600 hover:text-red-800" title="Cetak Biodata PDF">
-                                <i class="fa-solid fa-file-pdf"></i>
-                            </a>
-                        @else
-                            <a href="{{ route('admin.students.export-id-card', ['ids' => $student->id]) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 mr-1" title="Cetak ID Card">
-    <i class="fa-solid fa-id-card"></i>
-</a>
+                    <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
 
-                            {{-- Tombol PDF --}}
-                            <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank" class="text-red-600 hover:text-red-800 mr-1" title="Cetak Biodata PDF">
-                                <i class="fa-solid fa-file-pdf"></i>
-                            </a>
+    <div x-data="{ open: false }" class="relative">
+        <button @click="open = !open"
+            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+            Aksi
+            <i class="fa-solid fa-caret-down ml-1"></i>
+        </button>
 
-                            <a href="{{ route('admin.students.export-agreement', $student->id) }}" target="_blank" class="text-green-600 hover:text-green-800 mr-1" title="Cetak Surat Perjanjian">
-    <i class="fa-solid fa-file-contract"></i>
-</a>
+        <!-- Dropdown -->
+        <div x-show="open"
+             @click.away="open = false"
+             x-transition.origin.top.right
+             class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border border-gray-100 z-50">
 
-                            {{-- Tombol Detail --}}
-                            <a href="{{ route('admin.students.show', $student) }}" class="text-blue-600 hover:text-blue-900 font-bold" title="Lihat Data Lengkap">
-                                Detail
-                            </a>
-                            
-                            {{-- Tombol Edit --}}
-                            <button onclick="loadEditStudent({{ $student->id }})" class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                            
-                            {{-- Tombol Hapus --}}
-                            <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ $student->nama_lengkap }}')" class="text-red-600 hover:text-red-900">Hapus</button>
-                        @endif
-                    </td>
+            <ul class="py-1 text-sm">
+
+                {{-- MENUNGGU VERIFIKASI --}}
+                @if($student->status == 'Menunggu Verifikasi')
+
+                    <li>
+                        <a href="{{ route('admin.students.verify', $student->id) }}"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-green-600 font-semibold">
+                            <i class="fa-solid fa-clipboard-check mr-2"></i>
+                            Verifikasi
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
+                            <i class="fa-solid fa-file-pdf mr-2"></i>
+                            Biodata PDF
+                        </a>
+                    </li>
+
+                @else
+
+                    <li>
+                        <a href="{{ route('admin.students.export-id-card', ['ids' => $student->id]) }}" target="_blank"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100">
+                            <i class="fa-solid fa-id-card mr-2"></i>
+                            Cetak ID Card
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
+                            <i class="fa-solid fa-file-pdf mr-2"></i>
+                            Biodata PDF
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.students.export-agreement', $student->id) }}" target="_blank"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100">
+                            <i class="fa-solid fa-file-contract mr-2"></i>
+                            Surat Perjanjian
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.students.show', $student) }}"
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-blue-600 font-semibold">
+                            <i class="fa-solid fa-circle-info mr-2"></i>
+                            Detail
+                        </a>
+                    </li>
+
+                    <li>
+                        <button onclick="loadEditStudent({{ $student->id }})"
+                           class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100">
+                            <i class="fa-solid fa-pen mr-2 text-indigo-600"></i>
+                            Edit
+                        </button>
+                    </li>
+
+                    <li>
+                        <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ $student->nama_lengkap }}')"
+                           class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
+                            <i class="fa-solid fa-trash mr-2"></i>
+                            Hapus
+                        </button>
+                    </li>
+
+                @endif
+
+            </ul>
+        </div>
+    </div>
+
+</td>
+
+
                 </tr>
             @empty
                 <tr>

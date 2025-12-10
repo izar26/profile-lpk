@@ -42,9 +42,7 @@
                 @if($profile && $profile->logo)
                     <img src="{{ asset('storage/' . $profile->logo) }}" class="h-10 w-auto object-contain">
                 @endif
-                {{-- <span class="font-serif text-xl font-bold text-gray-900 hidden sm:block">
-                    {{ $profile->nama_lpk ?? 'LPK PROFILE' }}
-                </span> --}}
+                {{--    --}}
             </a>
             <a href="{{ route('home') }}#edukasi" class="text-gray-600 hover:text-gold-600 font-medium flex items-center gap-2 transition">
                 <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Kembali ke Artikel</span>
