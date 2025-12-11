@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ProgramPelatihan;
+use Illuminate\Support\Facades\DB;
 
 class SiswaAreaController extends Controller
 {
@@ -50,149 +51,130 @@ class SiswaAreaController extends Controller
      * Menyimpan/Update Data Formulir Lengkap.
      */
     public function updateFormulir(Request $request)
-    {
-        $student = Auth::user()->student;
+{
+    $student = Auth::user()->student;
 
-        if (!$student) {
-            return back()->with('error', 'Data siswa tidak ditemukan.');
-        }
+    if (!$student) {
+        return back()->with('error', 'Data siswa tidak ditemukan.');
+    }
 
-        // =========================================================================
-        // 1. LOGIC LOCKING (PENGUNCIAN)
-        // =========================================================================
-        // Hanya izinkan edit jika status 'Mendaftar' (Baru) atau 'Perlu Revisi'.
-        if (!in_array($student->status, ['Mendaftar', 'Perlu Revisi'])) {
-            return back()->with('error', 'Formulir terkunci karena sedang diproses. Status: ' . $student->status);
-        }
+    // 1. CEK STATUS LOCK
+    if (!in_array($student->status, ['Mendaftar', 'Perlu Revisi'])) {
+        return back()->with('error', 'Formulir terkunci. Status: ' . $student->status);
+    }
 
-        // =========================================================================
-        // 2. SIMPAN DATA PRIBADI (STEP 1)
-        // =========================================================================
-        
-        // Ambil data dari request sesuai kolom database terbaru
+    // 2. VALIDASI DATA (PENTING: Agar tidak crash jika ada yang kosong)
+    $request->validate([
+        'program_pelatihan_id' => 'required',
+        'nama_lengkap'         => 'required|string|max:255',
+        'tempat_lahir'         => 'required|string',
+        'tanggal_lahir'        => 'required|date',
+        'jenis_kelamin'        => 'required|in:Laki-laki,Perempuan',
+        'nik'                  => 'nullable|numeric', // Sesuaikan dengan nama field di form (nomor_ktp)
+        'nomor_ktp'            => 'required|numeric',
+        'email'                => 'required|email',
+        'no_hp_peserta'        => 'required',
+        'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi foto
+        // Tambahkan validasi lain sesuai kebutuhan...
+    ], [
+        // Custom Pesan Error (Opsional)
+        'nama_lengkap.required' => 'Nama Lengkap wajib diisi.',
+        'nomor_ktp.required'    => 'Nomor KTP wajib diisi.',
+        'program_pelatihan_id.required' => 'Silakan pilih program pelatihan.',
+    ]);
+
+    // 3. MULAI PROSES PENYIMPANAN DENGAN TRY-CATCH
+    DB::beginTransaction(); // Mulai transaksi database
+
+    try {
+        // --- A. SIMPAN DATA PRIBADI ---
         $data = $request->only([
             'program_pelatihan_id',
-            
-            // Data Diri
-            'nama_lengkap', // [UPDATED]
-            'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+            'nama_lengkap', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
             'tinggi_badan', 'berat_badan', 'golongan_darah',
             'agama', 'status_pernikahan',
-            
-            // Kependudukan
             'nomor_ktp', 'nomor_kk', 'nomor_paspor', 'nomor_npwp',
-            
-            // Kontak
             'email', 'no_hp_peserta', 'no_hp_ortu',    
-            
-            // Alamat
-            'alamat_domisili', 
-            'alamat_ktp', 'kota_ktp', 'provinsi_ktp', // [UPDATED]
-            
-            // Tanda Tangan
-            'kota_pembuatan' // [UPDATED]
+            'alamat_domisili', 'alamat_ktp', 'kota_ktp', 'provinsi_ktp',
+            'kota_pembuatan'
         ]);
 
-        // [LOGIC KHUSUS] Handling Checkbox "Pernah Bekerja"
-        // HTML Checkbox tidak mengirim value jika unchecked, jadi kita paksa boolean
         $data['pernah_bekerja'] = $request->has('pernah_bekerja') ? true : false;
-
         $student->fill($data);
+        $student->save(); // Simpan Data Diri dulu
 
-        // =========================================================================
-        // 3. SIMPAN PENDIDIKAN (STEP 2)
-        // =========================================================================
-        // Data dikirim dalam bentuk array: name="pendidikan[0][nama_institusi]" dst.
+        // --- B. SIMPAN PENDIDIKAN ---
+        // Kita hapus dulu yang lama, lalu buat baru (Reset Strategy)
+        $student->educations()->delete(); 
         if ($request->has('pendidikan')) {
-            $student->educations()->delete(); // Hapus data lama (Reset strategy)
-            
             foreach ($request->pendidikan as $edu) {
-                // Filter baris kosong (jika user menambah row tapi tidak diisi)
                 if (!empty($edu['nama_institusi'])) {
-                    // Pastikan key array $edu sesuai dengan kolom di tabel student_educations
-                    // (kategori, tingkat, nama_institusi, lokasi, jurusan, tahun_masuk, tahun_lulus, nilai_rata_rata)
                     $student->educations()->create($edu);
                 }
             }
         }
 
-        // =========================================================================
-        // 4. SIMPAN KELUARGA (STEP 3)
-        // =========================================================================
+        // --- C. SIMPAN KELUARGA ---
+        $student->families()->delete();
         if ($request->has('keluarga')) {
-            $student->families()->delete();
-            
             foreach ($request->keluarga as $fam) {
                 if (!empty($fam['nama'])) {
-                    // Pastikan key array $fam sesuai dengan kolom di tabel student_families
-                    // (hubungan, jenis_kelamin, nama, tanggal_lahir, usia, pendidikan, pekerjaan, penghasilan)
                     $student->families()->create($fam);
                 }
             }
         }
 
-        // =========================================================================
-        // 5. SIMPAN PENGALAMAN (STEP 4)
-        // =========================================================================
+        // --- D. SIMPAN PENGALAMAN ---
+        $student->experiences()->delete();
         if ($request->has('pengalaman')) {
-            $student->experiences()->delete();
-            
             foreach ($request->pengalaman as $exp) {
                 if (!empty($exp['nama_instansi'])) {
-                    // Pastikan key array $exp sesuai dengan kolom di tabel student_experiences
-                    // (tipe, nama_instansi, jenis_usaha, alamat_instansi, posisi, tanggal_mulai, tanggal_selesai, gaji_awal, gaji_akhir, alasan_berhenti)
                     $student->experiences()->create($exp);
                 }
             }
         }
 
-        // =========================================================================
-        // 6. UPLOAD DOKUMEN & FOTO (STEP 5)
-        // =========================================================================
-        
-        // A. Pas Foto
+        // --- E. UPLOAD FOTO ---
         if ($request->hasFile('foto')) {
             if ($student->foto) {
                 Storage::disk('public')->delete($student->foto);
             }
             $student->foto = $request->file('foto')->store('foto_siswa', 'public');
             
-            // Update foto User juga agar sinkron
+            // Sinkron ke tabel User
             if($student->user) {
                 $student->user->update(['foto' => $student->foto]);
             }
+            $student->save(); // Simpan path foto baru
         }
 
-        // B. Dokumen Lampiran
-        $documents = [
-            'file_ktp', 
-            'file_kk', 
-            'file_ijazah', 
-            'file_sertifikat_jlpt', 
-            'file_rekomendasi_sekolah', 
-            'file_izin_ortu'
-        ];
-        
+        // --- F. UPLOAD DOKUMEN ---
+        $documents = ['file_ktp', 'file_kk', 'file_ijazah', 'file_sertifikat_jlpt', 'file_rekomendasi_sekolah', 'file_izin_ortu'];
         foreach ($documents as $doc) {
             if ($request->hasFile($doc)) {
-                // Hapus file lama jika ada
                 if ($student->$doc) {
                     Storage::disk('public')->delete($student->$doc);
                 }
-                // Simpan file baru
                 $student->$doc = $request->file($doc)->store('dokumen_siswa', 'public');
             }
         }
+        $student->save(); // Simpan path dokumen
 
-        // =========================================================================
-        // 7. FINALISASI & AUTO-STATUS
-        // =========================================================================
-        
-        // Ubah status jadi "Menunggu Verifikasi" agar Admin mendapat notifikasi/tanda
-        $student->status = 'Menunggu Verifikasi';
-        
-        $student->save();
+        // --- G. UPDATE STATUS ---
+        $student->update(['status' => 'Menunggu Verifikasi']);
 
-        return redirect()->back()->with('success', 'Formulir berhasil dikirim! Data sedang diverifikasi oleh Admin.');
+        DB::commit(); // Semua sukses? Simpan permanen.
+
+        return redirect()->back()->with('success', 'Formulir berhasil dikirim! Data sedang diverifikasi.');
+
+    } catch (\Exception $e) {
+        DB::rollBack(); // Ada error? Batalkan semua perubahan.
+        
+        // Return error ke user (bukan halaman crash)
+        // Log error asli untuk developer: \Log::error($e->getMessage());
+        return back()
+            ->withInput() // Kembalikan input user agar tidak ngetik ulang
+            ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
     }
+}
 }

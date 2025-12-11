@@ -177,44 +177,44 @@
     <div class="pasal-title">Pasal 3</div>
     <div class="pasal-sub">SYARAT PESERTA PELATIHAN</div>
     <ol>
-        <li>PIHAK KEDUA wajib mengikuti tahapan proses, mulai dari tahap penyeleksian, pembelajaran, serta konsultasi dalam penentuan program yang akan di tempuh[cite: 26].</li>
-        <li>Proses Penyeleksian meliputi: Sehat Jasmani dan Rohani, Test tertulis, Kepribadian dan evaluasi karakter, Tidak mempunyai catatan kriminal, Lengkap berkas dan administrasi [cite: 27-32].</li>
-        <li>Peserta yang dinyatakan lulus proses penyeleksian, wajib mengikuti tahapan pelatihan sampai peserta dapat lulus sertifikasi Bahasa Level 4 (N4) atau JFT Basic A2[cite: 33].</li>
-        <li>Kegiatan ini meliputi pelatihan bahasa Jepang, orientasi lintas budaya, system kerja di Jepang, orientasi kepribadian dan evaluasi karakter serta kedisiplinan[cite: 34].</li>
-        <li>Para peserta akan dilatih oleh instruktur professional yang berpengalaman, selama proses pelatihan peserta pelatihan wajib mengikuti peraturan dan tata tertib yang berlaku[cite: 35].</li>
+        <li>PIHAK KEDUA wajib mengikuti tahapan proses, mulai dari tahap penyeleksian, pembelajaran, serta konsultasi dalam penentuan program yang akan di tempuh.</li>
+        <li>Proses Penyeleksian meliputi: Sehat Jasmani dan Rohani, Test tertulis, Kepribadian dan evaluasi karakter, Tidak mempunyai catatan kriminal, Lengkap berkas dan administrasi .</li>
+        <li>Peserta yang dinyatakan lulus proses penyeleksian, wajib mengikuti tahapan pelatihan sampai peserta dapat lulus sertifikasi Bahasa Level 4 (N4) atau JFT Basic A2.</li>
+        <li>Kegiatan ini meliputi pelatihan bahasa Jepang, orientasi lintas budaya, system kerja di Jepang, orientasi kepribadian dan evaluasi karakter serta kedisiplinan.</li>
+        <li>Para peserta akan dilatih oleh instruktur professional yang berpengalaman, selama proses pelatihan peserta pelatihan wajib mengikuti peraturan dan tata tertib yang berlaku.</li>
     </ol>
 
     <div class="pasal-title">Pasal 4</div>
     <div class="pasal-sub">JAM BELAJAR</div>
     <p class="text-justify" style="margin:0;">
         PIHAK KEDUA wajib mengikuti Pendidikan dan pelatihan yang diselangarakan oleh PIHAK PERTAMA dari hari Senin-Sabtu dengan jadwal pembelajaran sebagai berikut:
-        Senin-Jum’at : 08.00 - 16.00 WIB atau di jam yang telah disesuaikan oleh pihak Lembaga[cite: 38, 39].
+        Senin-Jum’at : 08.00 - 16.00 WIB atau di jam yang telah disesuaikan oleh pihak Lembaga.
     </p>
 
     <div class="pasal-title">Pasal 5</div>
     <div class="pasal-sub">PERATURAN</div>
     <p style="margin:0;">PIHAK KEDUA wajib mematuhi peraturan yang berlaku di LPK, adapun peraturan tersebut sebagai berikut:</p>
     <ol type="a">
-        <li>Dilarang merokok diluar area yang telah di tentukan[cite: 43];</li>
-        <li>Wajib mengikuti senam pagi[cite: 44];</li>
-        <li>Semua peserta wajib hadir di Tempat pelatihan 15 menit sebelum pelatihan di mulai[cite: 45];</li>
-        <li>Menjaga Norma – Norma yang berlaku dilingkungan pembelajaran[cite: 46];</li>
-        <li>Mengikuti semua aturan yang berlaku di lingkungan tempat pelatihan[cite: 47];</li>
-        <li>Mengikuti arahan dan bimbingan dari PIHAK PERTAMA[cite: 48].</li>
+        <li>Dilarang merokok diluar area yang telah di tentukan</li>
+        <li>Wajib mengikuti senam pagi</li>
+        <li>Semua peserta wajib hadir di Tempat pelatihan 15 menit sebelum pelatihan di mulai</li>
+        <li>Menjaga Norma – Norma yang berlaku dilingkungan pembelajaran</li>
+        <li>Mengikuti semua aturan yang berlaku di lingkungan tempat pelatihan</li>
+        <li>Mengikuti arahan dan bimbingan dari PIHAK PERTAMA.</li>
     </ol>
 
     <div class="pasal-title">Pasal 6</div>
     <div class="pasal-sub">HAK DAN KEWAJIBAN PIHAK KEDUA</div>
     <p style="margin:0;"><b>Ayat 1. PIHAK KEDUA berhak untuk :</b></p>
     <ol>
-        <li>Mendapatkan pembelajaran budaya dan bahasa Jepang[cite: 52];</li>
-        <li>Mendapatkan Seragam, buku/Modul Pelajaran[cite: 53];</li>
-        <li>Mendapatkan kesempatan informasi serta wawancara dengan pihak penerima di Jepang[cite: 54];</li>
-        <li>Mendapatkan sertifikat pelatihan apabila telah menyelesaikan program pelatihan[cite: 55].</li>
+        <li>Mendapatkan pembelajaran budaya dan bahasa Jepang</li>
+        <li>Mendapatkan Seragam, buku/Modul Pelajaran</li>
+        <li>Mendapatkan kesempatan informasi serta wawancara dengan pihak penerima di Jepang</li>
+        <li>Mendapatkan sertifikat pelatihan apabila telah menyelesaikan program pelatihan.</li>
     </ol>
     <p style="margin:0;"><b>Ayat 2. Peserta Pelatihan memiliki kewajiban sebagai berikut :</b></p>
     <ol>
-        <li>Melakukan pendaftaran dan menyelesaikan pembiayaan Pendidikan[cite: 57];</li>
+        <li>Melakukan pendaftaran dan menyelesaikan pembiayaan Pendidikan;</li>
         <li>Mentaati peraturan yang berlaku di LPK[cite: 58];</li>
         <li>Menyelesaikan pelatihan Bahasa Jepang[cite: 59].</li>
     </ol>
