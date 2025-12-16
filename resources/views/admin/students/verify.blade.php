@@ -81,31 +81,58 @@
             </div>
         </div>
 
-        {{-- KARTU DOKUMEN --}}
+        {{-- KARTU DOKUMEN (VERSI DINAMIS) --}}
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 flex items-center">
                 <i class="fa-solid fa-file-contract text-blue-500 mr-2"></i> Kelengkapan Dokumen
             </h3>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach([
-                    'file_ktp' => 'Scan KTP', 
-                    'file_kk' => 'Scan Kartu Keluarga', 
-                    'file_ijazah' => 'Scan Ijazah Terakhir',
-                    'file_sertifikat_jlpt' => 'Sertifikat JLPT',
-                    'file_rekomendasi_sekolah' => 'Surat Rekomendasi',
-                    'file_izin_ortu' => 'Surat Izin Orang Tua'
-                ] as $field => $label)
-                    <div class="flex items-center justify-between p-3 border rounded-lg {{ $student->$field ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
-                        <span class="text-sm font-semibold {{ $student->$field ? 'text-green-800' : 'text-red-800' }}">{{ $label }}</span>
-                        @if($student->$field)
-                            <a href="{{ asset('storage/'.$student->$field) }}" target="_blank" class="text-xs bg-white border border-green-300 px-3 py-1 rounded-full text-green-600 hover:bg-green-600 hover:text-white transition">
+                
+                {{-- 1. FOTO PROFIL (Masih dari tabel students) --}}
+                <div class="flex items-center justify-between p-3 border rounded-lg {{ $student->foto ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
+                    <span class="text-sm font-semibold {{ $student->foto ? 'text-green-800' : 'text-red-800' }}">
+                        Pas Foto 3x4 <span class="text-xs text-red-500">*</span>
+                    </span>
+                    @if($student->foto)
+                        <a href="{{ asset('storage/'.$student->foto) }}" target="_blank" class="text-xs bg-white border border-green-300 px-3 py-1 rounded-full text-green-600 hover:bg-green-600 hover:text-white transition">
+                            <i class="fa-solid fa-eye mr-1"></i> Cek
+                        </a>
+                    @else
+                        <span class="text-xs text-red-500 italic"><i class="fa-solid fa-times-circle"></i> Kosong</span>
+                    @endif
+                </div>
+
+                {{-- 2. DOKUMEN DINAMIS (Looping dari Master Data) --}}
+                @foreach($documentTypes as $docType)
+                    @php
+                        // Cari apakah siswa sudah upload dokumen jenis ini?
+                        $uploadedDoc = $student->documents->firstWhere('document_type_id', $docType->id);
+                        $isUploaded = !empty($uploadedDoc);
+                    @endphp
+
+                    <div class="flex items-center justify-between p-3 border rounded-lg {{ $isUploaded ? 'bg-green-50 border-green-200' : ($docType->is_required ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200') }}">
+                        <div>
+                            <span class="text-sm font-semibold block {{ $isUploaded ? 'text-green-800' : ($docType->is_required ? 'text-red-800' : 'text-gray-600') }}">
+                                {{ $docType->nama }}
+                                @if($docType->is_required) <span class="text-red-500">*</span> @endif
+                            </span>
+                        </div>
+
+                        @if($isUploaded)
+                            <a href="{{ asset('storage/'.$uploadedDoc->file_path) }}" target="_blank" class="text-xs bg-white border border-green-300 px-3 py-1 rounded-full text-green-600 hover:bg-green-600 hover:text-white transition">
                                 <i class="fa-solid fa-eye mr-1"></i> Cek
                             </a>
                         @else
-                            <span class="text-xs text-red-500 italic"><i class="fa-solid fa-times-circle"></i> Kosong</span>
+                            @if($docType->is_required)
+                                <span class="text-xs text-red-500 italic"><i class="fa-solid fa-times-circle"></i> Kosong</span>
+                            @else
+                                <span class="text-xs text-gray-400 italic">-</span>
+                            @endif
                         @endif
                     </div>
                 @endforeach
+
             </div>
         </div>
 

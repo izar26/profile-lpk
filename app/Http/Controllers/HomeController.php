@@ -82,4 +82,25 @@ public function showProgram($id)
         // 4. Kirim ke view
         return view('edukasi.show', compact('edukasi', 'profile', 'artikelLain'));
     }
+
+    // App/Http/Controllers/HomeController.php
+
+public function showKeberangkatan($id)
+{
+    // 1. Ambil data keberangkatan
+    $keberangkatan = Keberangkatan::findOrFail($id);
+
+    // 2. Ambil Profil LPK
+    $profile = LpkProfile::find(1);
+    if (!$profile) $profile = new LpkProfile();
+
+    // 3. Ambil keberangkatan lain untuk sidebar (kecuali yang sedang dilihat)
+    $lainnya = Keberangkatan::where('id', '!=', $id)
+                            ->latest('tanggal_berangkat')
+                            ->take(3)
+                            ->get();
+
+    // 4. Kirim ke view
+    return view('keberangkatan.show', compact('keberangkatan', 'profile', 'lainnya'));
+}
 }

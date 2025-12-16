@@ -362,41 +362,61 @@
             </div>
 
             {{-- STEP 5: UPLOAD DOKUMEN --}}
-            <div x-show="step === 5" x-transition.opacity>
-                <h3 class="text-xl font-serif font-bold text-gray-900 mb-6 border-b pb-2">Langkah 5: Upload Dokumen</h3>
-                
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 flex items-start">
-                    <div class="mr-4 text-blue-500 text-3xl"><i class="fa-solid fa-camera"></i></div>
-                    <div class="w-full">
-                        <label class="block font-bold text-gray-700 mb-1">Pas Foto Ukuran 3,5 x 4,5 <span class="text-red-500">*</span></label>
-                         @if($student->foto)
-                            <div class="mb-2 text-xs text-green-600 font-bold"><i class="fa-solid fa-check-circle"></i> Foto tersimpan</div>
-                        @endif
-                        <input type="file" name="foto" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50">
-                    </div>
-                </div>
+           <div x-show="step === 5" x-transition.opacity>
+    <h3 class="text-xl font-serif font-bold text-gray-900 mb-6 border-b pb-2">Langkah 5: Upload Dokumen</h3>
+    
+    {{-- Foto Profil (Tetap Hardcoded karena masuk tabel students, bukan tabel relasi) --}}
+    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 flex items-start">
+        <div class="mr-4 text-blue-500 text-3xl"><i class="fa-solid fa-camera"></i></div>
+        <div class="w-full">
+            <label class="block font-bold text-gray-700 mb-1">Pas Foto (3x4) <span class="text-red-500">*</span></label>
+             @if($student->foto)
+                <div class="mb-2 text-xs text-green-600 font-bold"><i class="fa-solid fa-check-circle"></i> Foto tersimpan</div>
+            @endif
+            <input type="file" name="foto" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50">
+        </div>
+    </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    @foreach([
-                        'file_ktp' => 'Scan KTP', 
-                        'file_kk' => 'Scan Kartu Keluarga', 
-                        'file_ijazah' => 'Scan Ijazah Terakhir',
-                        'file_sertifikat_jlpt' => 'Sertifikat JLPT (Jika ada)',
-                        'file_rekomendasi_sekolah' => 'Surat Rekomendasi Sekolah',
-                        'file_izin_ortu' => 'Surat Izin Orang Tua'
-                    ] as $field => $label)
-                    <div class="border p-4 rounded-lg bg-gray-50">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">{{ $label }}</label>
-                        @if($student->$field)
-                            <div class="mb-2 text-xs text-green-600 font-bold flex items-center">
-                                <i class="fa-solid fa-check-circle mr-1"></i> Tersimpan
-                                <a href="{{ asset('storage/'.$student->$field) }}" target="_blank" class="ml-2 text-blue-600 hover:underline">Lihat</a>
-                            </div>
-                        @endif
-                        <input type="file" name="{{ $field }}" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gold-50 file:text-gold-700 hover:file:bg-gold-100 disabled:opacity-50">
-                    </div>
-                    @endforeach
+    {{-- LOOPING DOKUMEN DINAMIS --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @foreach($documentTypes as $doc)
+        <div class="border p-4 rounded-lg bg-gray-50 hover:bg-white transition shadow-sm hover:shadow-md">
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+                {{ $doc->nama }}
+                @if($doc->is_required)
+                    <span class="text-red-500" title="Wajib">*</span>
+                @else
+                    <span class="text-gray-400 text-xs font-normal">(Opsional)</span>
+                @endif
+            </label>
+
+            {{-- Cek apakah sudah ada file yang diupload --}}
+            @php
+                $filePath = $uploadedDocuments[$doc->id] ?? null;
+            @endphp
+
+            @if($filePath)
+                <div class="mb-3 text-xs bg-green-100 text-green-700 px-3 py-2 rounded flex items-center justify-between">
+                    <span class="font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sudah Diupload</span>
+                    <a href="{{ asset('storage/'.$filePath) }}" target="_blank" class="text-blue-600 hover:underline font-bold">
+                        <i class="fa-solid fa-eye"></i> Lihat
+                    </a>
                 </div>
+            @else
+                <div class="mb-3 text-xs text-gray-400 italic">Belum ada file.</div>
+            @endif
+
+            {{-- Input File: Perhatikan name="documents[ID]" --}}
+            <input type="file" 
+                   name="documents[{{ $doc->id }}]" 
+                   accept=".jpg,.jpeg,.png,.pdf"
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gold-50 file:text-gold-700 hover:file:bg-gold-100 disabled:opacity-50 transition"
+                   {{ $doc->is_required && !$filePath ? 'required' : '' }}>
+                   
+            <p class="text-[10px] text-gray-400 mt-1">Format: JPG/PDF, Max: 2MB</p>
+        </div>
+        @endforeach
+    </div>
 
                 {{-- [NEW] TANDA TANGAN SECTION --}}
                 <div class="mt-12 flex justify-end">

@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StudentsExport;
+use App\Models\RefDocumentType;
 
 class StudentController extends Controller
 {
@@ -186,7 +187,13 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
-        return view('admin.students.show', compact('student'));
+        // 1. Load relasi documents
+        $student->load(['program', 'educations', 'families', 'experiences', 'documents.type']);
+
+        // 2. Ambil Master Data Dokumen (Gunakan 'id' karena kolom 'urutan' belum ada)
+        $documentTypes = \App\Models\RefDocumentType::where('is_active', true)->orderBy('id', 'asc')->get();
+
+        return view('admin.students.show', compact('student', 'documentTypes'));
     }
 
     /**
@@ -245,10 +252,13 @@ class StudentController extends Controller
         }
         $students = $query->get();
 
-        $pdf = Pdf::loadView('admin.students.pdf_view', compact('students'))
-                  ->setPaper('a4', 'landscape');
-        
-        return $pdf->download('laporan-siswa-lpk.pdf');
+        $profile = \App\Models\LpkProfile::first(); 
+
+    // Kirim variable 'profile' ke view
+    $pdf = Pdf::loadView('admin.students.pdf_view', compact('students', 'profile'))
+              ->setPaper('a4', 'landscape'); // Landscape biar muat banyak kolom
+    
+    return $pdf->download('laporan-siswa-lpk.pdf');
     }
 
     // --- FITUR EXPORT PDF PERORANGAN (Biodata) ---
@@ -271,8 +281,12 @@ class StudentController extends Controller
 
     public function verification(Student $student)
     {
-        $student->load(['program', 'educations', 'families', 'experiences']);
-        return view('admin.students.verify', compact('student'));
+        // 1. Load relasi 'documents' dan 'documents.type' (untuk ambil nama file)
+        $student->load(['program', 'educations', 'families', 'experiences', 'documents.type']);
+        
+        // 2. Ambil Master Data Dokumen untuk acuan pengecekan (Looping label)
+$documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')->get();
+        return view('admin.students.verify', compact('student', 'documentTypes'));
     }
 
     public function processVerification(Request $request, Student $student)

@@ -58,9 +58,7 @@
             <form action="{{ route('admin.students.update', $student) }}" method="POST" class="flex gap-2">
                 @csrf @method('PUT')
                 
-                {{-- [PENTING] Input Hidden harus nama_lengkap agar lolos validasi controller --}}
                 <input type="hidden" name="nama_lengkap" value="{{ $student->nama_lengkap }}">
-                {{-- Input email hidden untuk validasi unique ignore ID --}}
                 <input type="hidden" name="email" value="{{ $student->email }}">
                 
                 <select name="status" class="flex-1 rounded-lg border-gray-300 text-sm focus:border-gold-500 focus:ring-gold-500">
@@ -162,6 +160,51 @@
                     <p class="font-medium text-gray-800">{{ $student->alamat_domisili ?? '-' }}</p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- [BARU] TABEL DOKUMEN --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800"><i class="fa-solid fa-file-contract mr-2 text-gold-500"></i> Dokumen Pendukung</h3>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {{-- Loop Master Data agar terlihat mana yang kosong --}}
+            @if(isset($documentTypes) && $documentTypes->count() > 0)
+                @foreach($documentTypes as $docType)
+                    @php
+                        // Cek apakah user punya dokumen ini
+                        $uploadedDoc = $student->documents->firstWhere('document_type_id', $docType->id);
+                        $isUploaded = !empty($uploadedDoc);
+                    @endphp
+
+                    <div class="flex items-center justify-between p-3 border rounded-lg {{ $isUploaded ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200' }}">
+                        <div class="flex-1 min-w-0 pr-2">
+                            <span class="text-sm font-semibold block truncate {{ $isUploaded ? 'text-green-800' : 'text-gray-500' }}">
+                                {{ $docType->nama }}
+                                @if($docType->is_required) <span class="text-red-500">*</span> @endif
+                            </span>
+                            @if($isUploaded)
+                                <span class="text-[10px] text-green-600 block">Diupload: {{ $uploadedDoc->updated_at->format('d M Y') }}</span>
+                            @else
+                                <span class="text-[10px] text-gray-400 block italic">Belum diupload</span>
+                            @endif
+                        </div>
+
+                        @if($isUploaded)
+                            <a href="{{ asset('storage/'.$uploadedDoc->file_path) }}" target="_blank" class="flex-shrink-0 text-xs bg-white border border-green-300 px-3 py-1 rounded-full text-green-600 hover:bg-green-600 hover:text-white transition shadow-sm">
+                                <i class="fa-solid fa-eye mr-1"></i> Lihat
+                            </a>
+                        @else
+                            <span class="flex-shrink-0 text-gray-300 text-lg"><i class="fa-solid fa-file-circle-xmark"></i></span>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <div class="col-span-3 text-center py-4 text-gray-500 italic">
+                    Master Data Dokumen belum disetting. Silakan hubungi admin sistem.
+                </div>
+            @endif
         </div>
     </div>
 

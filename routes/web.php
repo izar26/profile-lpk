@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\KeberangkatanController;
 use App\Http\Controllers\Admin\AlumniController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\RefDocumentTypeController;
 use App\Http\Controllers\Siswa\SiswaAreaController;
 use App\Http\Controllers\Pegawai\PegawaiAreaController;
 use App\Http\Controllers\Siswa\SiswaTestimoniController;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/program/{id}', [HomeController::class, 'showProgram'])->name('public.program.show');
 Route::get('/artikel/{slug}', [HomeController::class, 'showEdukasi'])->name('public.edukasi.show');
+Route::get('/keberangkatan/{id}', [HomeController::class, 'showKeberangkatan'])->name('public.keberangkatan.show');
 Route::get('/verify/{id}', [App\Http\Controllers\PublicVerifyController::class, 'verify'])->name('student.verify');
 Route::post('/verify/check', [App\Http\Controllers\PublicVerifyController::class, 'check'])->name('student.verify.check');
 Route::get('/verify/pegawai/{employee}', [EmployeeController::class, 'verification'])->name('pegawai.verification.public');
@@ -52,6 +54,8 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Panggil Controller yang baru kita buat
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard'); // <-- INI YANG BARU
+
+    Route::resource('document-types', RefDocumentTypeController::class)->names('document-types');
 
     Route::resource('users', UserController::class);
         

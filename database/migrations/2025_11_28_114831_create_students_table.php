@@ -61,14 +61,7 @@ return new class extends Migration
             // --- [PERTANYAAN KHUSUS] ---
             // Apakah Anda Pernah Bekerja? (Ya/Tidak) [cite: 29-31]
             $table->boolean('pernah_bekerja')->default(false);
-
-            // --- [LAMPIRAN] [cite: 74-81] ---
-            $table->string('file_ktp')->nullable();
-            $table->string('file_kk')->nullable();
-            $table->string('file_ijazah')->nullable(); // Termasuk SKL jika ijazah belum keluar [cite: 83]
-            $table->string('file_sertifikat_jlpt')->nullable();
-            $table->string('file_rekomendasi_sekolah')->nullable();
-            $table->string('file_izin_ortu')->nullable();
+            
 
             // --- [BAGIAN TANDA TANGAN] ---
             // Mengakomodasi isian "Kota........, Tgl....." di atas tanda tangan [cite: 62, 69]

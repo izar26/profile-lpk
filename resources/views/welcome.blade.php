@@ -522,29 +522,40 @@
         </div>
 
         <div class="flex gap-6 overflow-x-auto pb-8 snap-x no-scrollbar justify-start md:justify-center px-4" data-aos="fade-up">
-            @foreach($keberangkatans as $info)
-            <div class="snap-center shrink-0 w-80 bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
-                <div class="h-48 overflow-hidden relative group">
-                    @if($info->foto) 
-                        <img src="{{ asset('storage/'.$info->foto) }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110"> 
-                    @else
-                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                            <i class="fa-regular fa-image text-4xl text-gray-400"></i>
-                        </div>
-                    @endif
-                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gold-600 shadow-sm">
-                        {{ $info->tanggal_berangkat->format('d M Y') }}
-                    </div>
+    @foreach($keberangkatans as $info)
+    <div class="snap-center shrink-0 w-80 bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition duration-300">
+        
+        <a href="{{ route('public.keberangkatan.show', $info->id) }}" class="block h-48 overflow-hidden relative group">
+            @if($info->foto) 
+                <img src="{{ asset('storage/'.$info->foto) }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110"> 
+            @else
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <i class="fa-regular fa-image text-4xl text-gray-400"></i>
                 </div>
-                <div class="p-5">
-                    <div class="flex items-center text-xs text-gray-500 font-medium mb-2 gap-2">
-                        <span><i class="fa-solid fa-users text-gold-500"></i> {{ $info->jumlah_peserta }} Peserta</span>
-                    </div>
-                    <h3 class="font-bold text-lg text-gray-900 line-clamp-2">{{ $info->judul }}</h3>
-                </div>
+            @endif
+            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gold-600 shadow-sm">
+                {{ $info->tanggal_berangkat->format('d M Y') }}
             </div>
-            @endforeach
+        </a>
+
+        <div class="p-5">
+            <div class="flex items-center text-xs text-gray-500 font-medium mb-2 gap-2">
+                <span><i class="fa-solid fa-users text-gold-500"></i> {{ $info->jumlah_peserta }} Peserta</span>
+                <span class="text-gray-300">|</span>
+                <span><i class="fa-solid fa-map-pin text-gold-500"></i> {{ $info->tujuan }}</span>
+            </div>
+            
+            <a href="{{ route('public.keberangkatan.show', $info->id) }}">
+                <h3 class="font-bold text-lg text-gray-900 line-clamp-2 hover:text-gold-600 transition">{{ $info->judul }}</h3>
+            </a>
+
+            <a href="{{ route('public.keberangkatan.show', $info->id) }}" class="inline-block mt-3 text-xs font-bold text-gold-600 uppercase tracking-wider hover:underline">
+                Lihat Detail <i class="fa-solid fa-arrow-right ml-1"></i>
+            </a>
         </div>
+    </div>
+    @endforeach
+</div>
 
     </div>
 </section>

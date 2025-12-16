@@ -136,4 +136,24 @@ class Student extends Model
             'text' => "$filled / $total Field Utama Terisi"
         ];
     }
+
+
+// Tambahkan fungsi ini
+public function documents()
+{
+    return $this->hasMany(StudentDocument::class, 'student_id');
+}
+
+// Helper untuk mengecek apakah siswa sudah upload dokumen tertentu (berdasarkan ID tipe)
+public function hasDocument($typeId)
+{
+    return $this->documents()->where('document_type_id', $typeId)->exists();
+}
+
+// Helper untuk mengambil path file dokumen tertentu
+public function getDocumentPath($typeId)
+{
+    $doc = $this->documents()->where('document_type_id', $typeId)->first();
+    return $doc ? $doc->file_path : null;
+}
 }

@@ -165,6 +165,13 @@
                     </div>
 
                     <li>
+    <a href="{{ route('admin.document-types.index') }}" class="flex items-center p-2 rounded-lg group transition-colors duration-200 {{ request()->routeIs('admin.document-types.*') ? 'bg-gold-500 text-white font-bold shadow-md' : 'text-gray-700 hover:bg-gold-50 hover:text-gold-600' }}">
+        <i class="fa-solid fa-file-invoice w-5 h-5 transition duration-75 {{ request()->routeIs('admin.document-types.*') ? 'text-white' : 'text-gray-500 group-hover:text-gold-600' }}"></i>
+        <span class="ms-3">Master Dokumen</span>
+    </a>
+</li>
+
+                    <li>
                         <a href="{{ route('admin.users.index') }}" class="flex items-center p-2 rounded-lg group transition-colors duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-gold-500 text-white font-bold shadow-md' : 'text-gray-700 hover:bg-gold-50 hover:text-gold-600' }}">
                             <i class="fa-solid fa-users-cog w-5 h-5 transition duration-75 {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-gray-500 group-hover:text-gold-600' }}"></i>
                             <span class="ms-3">Kelola User</span>

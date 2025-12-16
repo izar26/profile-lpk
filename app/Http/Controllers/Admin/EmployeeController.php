@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\User;
-use App\Models\LpkProfile; // Pastikan Model ini ada
+use App\Models\LpkProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -155,16 +155,25 @@ class EmployeeController extends Controller
     }
 
     // --- FITUR EXPORT PDF LAPORAN ---
-    public function exportPdf(Request $request)
-    {
-        $ids = $request->ids ? explode(',', $request->ids) : null;
-        $query = Employee::query();
-        if ($ids) $query->whereIn('id', $ids);
-        $employees = $query->get();
+    // App/Http/Controllers/Admin/EmployeeController.php
 
-        $pdf = Pdf::loadView('admin.employees.pdf_view', compact('employees'))->setPaper('a4', 'landscape');
-        return $pdf->download('laporan-pegawai.pdf');
-    }
+public function exportPdf(Request $request)
+{
+    // ... logic filter data employees (kode lama Anda) ...
+    $ids = $request->ids ? explode(',', $request->ids) : null;
+    $query = Employee::query();
+    if ($ids) $query->whereIn('id', $ids);
+    $employees = $query->get();
+    
+    // [TAMBAHAN] Ambil data profile LPK
+    $profile = \App\Models\LpkProfile::first(); 
+
+    // Kirim variable 'profile' ke view
+    $pdf = Pdf::loadView('admin.employees.pdf_view', compact('employees', 'profile'))
+              ->setPaper('a4', 'landscape');
+    
+    return $pdf->download('laporan-pegawai.pdf');
+}
 
     // --- FITUR EXPORT BIODATA PERORANGAN ---
     public function exportPdfIndividual(Employee $employee)
