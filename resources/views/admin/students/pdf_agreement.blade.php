@@ -7,7 +7,7 @@
         /* Mengatur Margin Halaman PDF secara global */
         @page {
             /* Margin standar kiri/kanan/bawah */
-            margin: 2cm 2cm 2cm 2cm; 
+            margin: 2cm 2cm 2cm 2cm;
         }
 
         body {
@@ -18,7 +18,7 @@
         }
 
         /* KUNCI PERUBAHAN:
-           Jarak untuk Kop Surat Fisik. 
+           Jarak untuk Kop Surat Fisik.
            Jika kop suratmu tingginya 4cm, ubah height: 4cm.
            Ini hanya akan mendorong konten di halaman pertama.
         */
@@ -35,7 +35,7 @@
         .uppercase { text-transform: uppercase; }
         .mb-1 { margin-bottom: 5px; }
         .mt-2 { margin-top: 10px; }
-        
+
         /* Layout Tabel Informasi */
         .info-table {
             width: 100%;
@@ -79,7 +79,7 @@
             padding: 4px;
         }
         .biaya-table th { background-color: #f0f0f0; }
-        
+
         /* Tanda Tangan */
         .ttd-table {
             width: 100%;
@@ -97,7 +97,7 @@
 
     <div class="header-space"></div>
 
-    <div class="text-center text-bold mb-1">
+    <div class="text-center text-bold mb-1" style="font-size: 14pt;">
         SURAT PERJANJIAN PELATIHAN BAHASA JEPANG ANTARA<br>
         {{ strtoupper($profile->nama_lpk ?? 'LPK ANDA') }}<br>
         DENGAN<br>
@@ -215,32 +215,32 @@
     <p style="margin:0;"><b>Ayat 2. Peserta Pelatihan memiliki kewajiban sebagai berikut :</b></p>
     <ol>
         <li>Melakukan pendaftaran dan menyelesaikan pembiayaan Pendidikan;</li>
-        <li>Mentaati peraturan yang berlaku di LPK[cite: 58];</li>
-        <li>Menyelesaikan pelatihan Bahasa Jepang[cite: 59].</li>
+        <li>Mentaati peraturan yang berlaku di LPK</li>
+        <li>Menyelesaikan pelatihan Bahasa Jepang.</li>
     </ol>
 
     <div class="pasal-title">Pasal 7</div>
     <div class="pasal-sub">HAK DAN KEWAJIBAN PIHAK PERTAMA</div>
     <p style="margin:0;"><b>Ayat 1. Pihak Pertama berhak untuk :</b></p>
     <ol>
-        <li>Menarik biaya Pendidikan / jasa peserta pelatihan[cite: 63];</li>
-        <li>Mengevaluasi peserta pelatihan[cite: 64];</li>
-        <li>Memberhentikan peserta pelatihan yang melanggar peraturan/perjanjian[cite: 65].</li>
+        <li>Menarik biaya Pendidikan / jasa peserta pelatihan</li>
+        <li>Mengevaluasi peserta pelatihan</li>
+        <li>Memberhentikan peserta pelatihan yang melanggar peraturan/perjanjian.</li>
     </ol>
     <p style="margin:0;"><b>Ayat 2. Lembaga Pelatihan kerja (LPK) berkewajiban untuk :</b></p>
     <ol>
-        <li>Memberikan fasilitas pelatihan bahasa dan budaya jepang[cite: 67];</li>
-        <li>Menyediakan instruktur dan tenaga kepelatihan[cite: 68];</li>
-        <li>Mengatur dan menjadwalkan Medical Check up[cite: 69];</li>
-        <li>Memfasilitasi interview dengan perusahaan penerima kerja di Jepang[cite: 70];</li>
-        <li>Memberikan sertifikat kepada peserta yang telah menyelesaikan program pelatihan[cite: 71].</li>
+        <li>Memberikan fasilitas pelatihan bahasa dan budaya jepang;</li>
+        <li>Menyediakan instruktur dan tenaga kepelatihan;</li>
+        <li>Mengatur dan menjadwalkan Medical Check up;</li>
+        <li>Memfasilitasi interview dengan perusahaan penerima kerja di Jepang;</li>
+        <li>Memberikan sertifikat kepada peserta yang telah menyelesaikan program pelatihan.</li>
     </ol>
 
     <div style="page-break-inside: avoid;">
         <div class="pasal-title">Pasal 8</div>
         <div class="pasal-sub">PEMBIAYAAN</div>
         <p style="margin:0;">Biaya pelatihan yang menjadi tanggungan peserta pelatihan sekaligus Fasilitas yang diberikan PIHAK PERTAMA kepada PIHAK KEDUA sebagai berikut :</p>
-        
+
         <div class="text-center text-bold" style="margin-top:5px;">RINCIAN BIAYA</div>
         <table class="biaya-table">
             <thead>
@@ -259,53 +259,53 @@
                 <tr><td colspan="2" class="text-right text-bold">TOTAL</td><td class="text-right text-bold">Rp. 9.000.000,-</td></tr>
             </tbody>
         </table>
-        
+
         <ol>
-            <li>Biaya kolom di atas hanya meliputi biaya pelatihan beserta kelengkapannya, tidak termasuk dengan biaya proses pemberangkatan[cite: 77].</li>
-            <li>Biaya proses pemberangkatan tergantung program yang akan di ikuti oleh pihak kedua[cite: 78].</li>
-            <li>Pihak pertama hanya memfasilitasi pembelajaran Bahasa dan budaya Jepang serta konsultasi[cite: 79].</li>
-            <li>Adapun Konsultasi Fee dibicarakan setelah PIHAK KEDUA memilih program[cite: 80].</li>
+            <li>Biaya kolom di atas hanya meliputi biaya pelatihan beserta kelengkapannya, tidak termasuk dengan biaya proses pemberangkatan.</li>
+            <li>Biaya proses pemberangkatan tergantung program yang akan di ikuti oleh pihak kedua.</li>
+            <li>Pihak pertama hanya memfasilitasi pembelajaran Bahasa dan budaya Jepang serta konsultasi.</li>
+            <li>Adapun Konsultasi Fee dibicarakan setelah PIHAK KEDUA memilih program.</li>
         </ol>
     </div>
 
     <div class="pasal-title">Pasal 9</div>
     <div class="pasal-sub">PELANGGARAN</div>
     <ol>
-        <li>Jika peserta pelatihan melakukan tindakan pelanggaran, akan dikenakan sanksi berdasarkan pasal 12[cite: 83].</li>
-        <li>Jika PIHAK KEDUA tidak memahami tentang program, bergaul dalam kelompok pelanggaran, atau kegiatan pelanggaran fatal (narkoba dll)[cite: 84].</li>
-        <li>Melakukan perusakan fasilitas PIHAK PERTAMA, kelakuan tidak baik (selama pelatihan kerja)[cite: 85].</li>
-        <li>Tindakan yang melanggar hukum di Indonesia: Kekerasan, Merokok sembarangan, Pencurian, Menghina/Membully orang lain, Jual beli barang terlarang [cite: 86-91].</li>
+        <li>Jika peserta pelatihan melakukan tindakan pelanggaran, akan dikenakan sanksi berdasarkan pasal 12.</li>
+        <li>Jika PIHAK KEDUA tidak memahami tentang program, bergaul dalam kelompok pelanggaran, atau kegiatan pelanggaran fatal (narkoba dll).</li>
+        <li>Melakukan perusakan fasilitas PIHAK PERTAMA, kelakuan tidak baik (selama pelatihan kerja).</li>
+        <li>Tindakan yang melanggar hukum di Indonesia: Kekerasan, Merokok sembarangan, Pencurian, Menghina/Membully orang lain, Jual beli barang terlarang.</li>
     </ol>
 
     <div class="pasal-title">Pasal 10 (SANKSI PELANGGARAN)</div>
-    <p class="text-justify" style="margin:0;">Jika melanggar Pasal 9, akan mendapatkan peringatan / Dikeluarkan / Dikembalikan ke keluarga tergantung beratnya pelanggaran[cite: 95].</p>
+    <p class="text-justify" style="margin:0;">Jika melanggar Pasal 9, akan mendapatkan peringatan / Dikeluarkan / Dikembalikan ke keluarga tergantung beratnya pelanggaran.</p>
 
     <div class="pasal-title">Pasal 11 (JANGKA WAKTU)</div>
-    <p class="text-justify" style="margin:0;">Pelatihan selesai ditentukan PIHAK PERTAMA (sampai N4). Jika peserta tidak hadir/mengikuti, perjanjian dapat dibatalkan. Biaya yang sudah dibayar tidak dapat diambil kembali[cite: 98, 99].</p>
+    <p class="text-justify" style="margin:0;">Pelatihan selesai ditentukan PIHAK PERTAMA (sampai N4). Jika peserta tidak hadir/mengikuti, perjanjian dapat dibatalkan. Biaya yang sudah dibayar tidak dapat diambil kembali.</p>
 
     <div class="pasal-title">Pasal 12 (PENYELESAIAN PERSELISIHAN)</div>
     <ol>
-        <li>Perselisihan diselesaikan dengan musyawarah[cite: 102].</li>
-        <li>Jika buntu, diselesaikan melalui Putusan Pengadilan[cite: 103].</li>
-        <li>Pelanggaran pribadi diselesaikan sesuai hukum yang berlaku di Indonesia[cite: 104].</li>
+        <li>Perselisihan diselesaikan dengan musyawarah.</li>
+        <li>Jika buntu, diselesaikan melalui Putusan Pengadilan.</li>
+        <li>Pelanggaran pribadi diselesaikan sesuai hukum yang berlaku di Indonesia.</li>
     </ol>
 
     <div class="pasal-title">Pasal 13</div>
-    <p class="text-justify" style="margin:0;">Peserta wajib menjunjung tinggi nama baik PIHAK PERTAMA dan tidak merusak citra nama baik PIHAK PERTAMA[cite: 106].</p>
+    <p class="text-justify" style="margin:0;">Peserta wajib menjunjung tinggi nama baik PIHAK PERTAMA dan tidak merusak citra nama baik PIHAK PERTAMA.</p>
 
     <div class="pasal-title">Pasal 14 (MASA BERLAKU)</div>
     <ol>
-        <li>Perjanjian berlaku sejak tanggal tanda tangan[cite: 109].</li>
-        <li>Dibuat dua salinan untuk disimpan masing-masing pihak[cite: 110].</li>
+        <li>Perjanjian berlaku sejak tanggal tanda tangan.</li>
+        <li>Dibuat dua salinan untuk disimpan masing-masing pihak.</li>
     </ol>
-    <p style="margin-top:5px;">Demikian surat perjanjian bersama ini dibuat, tanpa ada tekanan atau paksaan dari pihak manapun juga dan dibuat dalam keadaan sadar dan mengetahui orang tua sebagai saksi[cite: 111].</p>
+    <p style="margin-top:5px;">Demikian surat perjanjian bersama ini dibuat, tanpa ada tekanan atau paksaan dari pihak manapun juga dan dibuat dalam keadaan sadar dan mengetahui orang tua sebagai saksi.</p>
 
     <br>
-    
+
     <table class="ttd-table">
         <tr>
             <td colspan="2">
-                {{ $profile->kota_ktp ?? 'Cianjur' }}, {{ $tanggalSurat }} [cite: 112]
+                {{ $profile->kota_ktp ?? 'Cianjur' }}, {{ $tanggalSurat }}
             </td>
         </tr>
         <tr>
