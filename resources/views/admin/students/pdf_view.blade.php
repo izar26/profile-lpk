@@ -3,56 +3,90 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Laporan Data Siswa</title>
+
+    {{-- 1. PROSES KONVERSI GAMBAR KE BASE64 (Supaya pasti muncul) --}}
+    @php
+        $bgImage = null;
+        if(isset($profile) && $profile->background_surat) {
+            $path = public_path('storage/' . $profile->background_surat);
+
+            // Cek apakah file ada
+            if(file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $bgImage = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        }
+    @endphp
+
     <style>
-        /* 1. ATURAN HALAMAN FISIK (GLOBAL) */
+        /* 2. ATURAN HALAMAN KERTAS */
         @page {
-            /* Paksa Ukuran Kertas A4 Portrait */
+            /* Paksa ukuran A4 */
             size: A4 portrait;
-
-            /* Margin halaman standar */
-            margin: 1cm 1.5cm;
-
-            /* LOGIKA BACKGROUND (WATERMARK) DI SEMUA HALAMAN */
-            @if(isset($profile) && $profile->background_surat)
-                background-image: url('{{ public_path("storage/" . $profile->background_surat) }}');
-                background-repeat: no-repeat;
-
-                /* POSISI: Tengah-tengah kertas */
-                background-position: center center;
-
-                /* UKURAN:
-                   - Jangan pakai 'cover' agar tidak penyok/terpotong.
-                   - Gunakan angka persentase (misal 60% - 80%) atau 'contain'.
-                   - Ini menjaga aspek rasio gambar asli Anda.
-                */
-                background-size: 80%;
-            @endif
+            margin: 0; /* Margin 0 di @page agar background bisa full tepi (bleed) */
         }
 
         body {
             font-family: sans-serif;
             font-size: 10pt;
-            /* Pastikan body tidak menimpa background @page */
-            background-color: transparent;
+
+            /* Margin konten sesungguhnya diatur di sini */
+            margin: 1cm 2cm;
+
+            /* Background ditaruh di body agar lebih fleksibel */
+            @if($bgImage)
+                background-image: url("{{ $bgImage }}");
+                background-repeat: no-repeat;
+                background-position: center center;
+
+                /* SOLUSI AGAR TIDAK PENYOK / KEGEDEAN:
+                   - '100% 100%' = Memaksa gambar memenuhi kertas A4 (Bisa penyok dikit kalau rasio gambar beda).
+                   - 'cover' = Memenuhi kertas tapi ada bagian terpotong.
+                   - 'contain' = Gambar utuh tapi ada sisa putih.
+
+                   Saran: Gunakan 100% 100% jika gambar Anda memang didesain seukuran A4.
+                */
+                background-size: 100% 100%;
+
+                /* Pastikan background ada di belakang (z-index tidak berlaku di PDF tapi urutan penting) */
+                background-attachment: fixed;
+            @endif
         }
 
-        /* --- KOP SURAT (Hanya Halaman 1) --- */
-        .kop-image {
+        /* --- STYLE LAINNYA --- */
+        .header-wrapper {
+            margin-top: 1cm; /* Jarak tambahan dari atas karena margin body 0 */
             width: 100%;
-            height: auto;
-            display: block;
-            border-bottom: 2px solid #000;
             margin-bottom: 20px;
         }
 
-        /* --- DATA TABLE STYLE --- */
+        .kop-image {
+            width: 100%;
+            height: auto;
+            border-bottom: 2px solid #000;
+        }
+
+        /* Header Manual Text */
+        .header-table {
+            width: 100%;
+            border-bottom: 3px double black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header-table td { border: none; vertical-align: middle; }
+        .logo-cell { width: 15%; text-align: center; }
+        .text-cell { width: 85%; text-align: center; }
+        .lpk-name { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 0; color: #D4AF37; }
+        .lpk-address { font-size: 10pt; margin: 2px 0; }
+
+        /* Tabel Data */
         .table-data {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            /* Beri latar belakang putih semi-transparan pada tabel
-               agar teks tetap terbaca jelas di atas watermark */
-            background-color: rgba(255, 255, 255, 0.85);
+            /* Latar putih transparan supaya tulisan terbaca jelas di atas background */
+            background-color: rgba(255, 255, 255, 0.7);
         }
         .table-data th, .table-data td {
             border: 1px solid #444;
@@ -67,30 +101,37 @@
             text-align: center;
             text-transform: uppercase;
         }
+
         .text-center { text-align: center; }
-        .badge {
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 8pt;
-            font-weight: bold;
-            border: 1px solid #ccc;
-        }
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 8pt; font-weight: bold; border: 1px solid #ccc; background: #fff; }
     </style>
 </head>
 <body>
 
-    {{-- 1. HEADER / KOP SURAT --}}
-    {{-- Karena diletakkan di dalam body (bukan @page), ini hanya muncul di Halaman 1 --}}
+    {{-- KOP SURAT (Hanya Halaman 1) --}}
     <div class="header-wrapper">
         @if(isset($profile) && $profile->kop_surat)
-            {{-- Tampilkan Gambar Kop Full --}}
+            {{-- Gunakan public_path biasa untuk img tag, atau base64 juga boleh --}}
             <img src="{{ public_path('storage/' . $profile->kop_surat) }}" class="kop-image" alt="Kop Surat">
         @else
-            {{-- Fallback jika tidak ada gambar kop (Text Only) --}}
-            <div style="text-align: center; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 20px;">
-                <h1 style="margin:0; font-size:16pt; text-transform:uppercase;">{{ $profile->nama_lpk ?? config('app.name') }}</h1>
-                <p style="margin:2px; font-size:10pt;">{{ $profile->alamat }}</p>
-            </div>
+            {{-- Fallback Text Header --}}
+            <table class="header-table">
+                <tr>
+                    <td class="logo-cell">
+                        @if(isset($profile) && $profile->logo)
+                            <img src="{{ public_path('storage/' . $profile->logo) }}" width="70">
+                        @endif
+                    </td>
+                    <td class="text-cell">
+                        <h1 class="lpk-name">{{ $profile->nama_lpk ?? 'LPK HACHIMITSU' }}</h1>
+                        <p class="lpk-address">{{ $profile->alamat }}</p>
+                        <p style="font-size:9pt; font-style:italic;">
+                            {{ $profile->nomor_wa ? 'Telp: '.$profile->nomor_wa : '' }}
+                            {{ $profile->email ? '| Email: '.$profile->email : '' }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
         @endif
     </div>
 
@@ -120,32 +161,22 @@
                 <td><strong style="text-transform: uppercase;">{{ $student->nama_lengkap }}</strong></td>
                 <td>{{ $student->nomor_ktp ?? '-' }}</td>
                 <td>{{ $student->program->judul ?? '-' }}</td>
-                <td class="text-center">
-                    <span class="badge">{{ $student->status }}</span>
-                </td>
+                <td class="text-center"><span class="badge">{{ $student->status }}</span></td>
                 <td style="font-size: 8pt;">{{ $student->email }}</td>
                 <td>{{ $student->no_hp_peserta ?? '-' }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center" style="padding: 20px; font-style: italic; color: #777;">
-                    Tidak ada data siswa ditemukan.
-                </td>
+                <td colspan="7" class="text-center" style="padding: 20px;">Tidak ada data siswa.</td>
             </tr>
             @endforelse
         </tbody>
     </table>
 
-    {{-- FOOTER / TANDA TANGAN --}}
-    {{-- Menggunakan page-break-inside: avoid agar TTD tidak terpotong ke halaman baru sendirian --}}
+    {{-- TANDA TANGAN --}}
     <div style="margin-top: 40px; float: right; width: 200px; text-align: center; page-break-inside: avoid;">
-        <p style="font-size: 10pt; margin-bottom: 60px;">
-            Mengetahui,<br>
-            Pimpinan
-        </p>
-        <p style="font-weight: bold; text-decoration: underline;">
-            {{ $profile->nama_pimpinan ?? '(....................)' }}
-        </p>
+        <p style="font-size: 10pt; margin-bottom: 60px;">Mengetahui,<br>Pimpinan</p>
+        <p style="font-weight: bold; text-decoration: underline;">{{ $profile->nama_pimpinan ?? '....................' }}</p>
     </div>
 
 </body>
