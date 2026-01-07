@@ -23,10 +23,10 @@
 @endif
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start pb-20">
-    
+
     {{-- KOLOM KIRI: DATA SISWA (READ ONLY) --}}
     <div class="lg:col-span-2 space-y-6">
-        
+
         {{-- KARTU DATA DIRI --}}
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 flex items-center justify-between">
@@ -57,7 +57,7 @@
 
                 {{-- Baris 5: Tambahan --}}
                 <div><span class="text-gray-500 block text-xs">Status Nikah</span> <span class="font-medium">{{ $student->status_pernikahan ?? '-' }}</span></div>
-                <div><span class="text-gray-500 block text-xs">Pernah Bekerja?</span> 
+                <div><span class="text-gray-500 block text-xs">Pernah Bekerja?</span>
                     <span class="font-bold px-2 py-0.5 rounded text-xs {{ $student->pernah_bekerja ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
                         {{ $student->pernah_bekerja ? 'YA' : 'TIDAK' }}
                     </span>
@@ -67,15 +67,43 @@
                 <div class="col-span-2 border-t pt-2 mt-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <span class="text-gray-500 block text-xs">Alamat Sesuai KTP</span> 
+                            <span class="text-gray-500 block text-xs">Alamat Sesuai KTP</span>
                             <span class="font-medium block mb-2">{{ $student->alamat_ktp ?? '-' }} <br>
                                 <span class="text-xs text-gray-400">{{ $student->kota_ktp ?? '' }} {{ $student->provinsi_ktp ?? '' }}</span>
                             </span>
                         </div>
                         <div>
-                            <span class="text-gray-500 block text-xs">Alamat Domisili</span> 
+                            <span class="text-gray-500 block text-xs">Alamat Domisili</span>
                             <span class="font-medium block">{{ $student->alamat_domisili ?? '-' }}</span>
                         </div>
+                    </div>
+                </div>
+
+                <div class="col-span-2 border-t pt-4 mt-4">
+                    <span class="text-xs text-gray-500 block mb-2 font-bold uppercase tracking-wider">
+                        Tanda Tangan Peserta
+                    </span>
+                    <div class="flex items-center gap-4">
+                        @if($student->tanda_tangan)
+                            <div class="bg-gray-50 p-2 border border-gray-200 rounded-lg inline-block">
+                                {{-- Asumsi path storage --}}
+                                <img src="{{ asset('storage/'.$student->tanda_tangan) }}"
+                                     alt="Tanda Tangan"
+                                     class="h-16 w-auto object-contain mix-blend-multiply">
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <i class="fa-solid fa-check-circle text-green-500"></i> Diunggah
+                            </div>
+                        @else
+                            <div class="h-16 w-48 bg-gray-100 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-xs italic">
+                                Belum ada tanda tangan
+                            </div>
+                            @if(!$student->tanda_tangan)
+                                <div class="text-xs text-red-500 font-bold ml-2">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Wajib Dicek!
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
             </div>
@@ -86,9 +114,9 @@
             <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 flex items-center">
                 <i class="fa-solid fa-file-contract text-blue-500 mr-2"></i> Kelengkapan Dokumen
             </h3>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
+
                 {{-- 1. FOTO PROFIL (Masih dari tabel students) --}}
                 <div class="flex items-center justify-between p-3 border rounded-lg {{ $student->foto ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
                     <span class="text-sm font-semibold {{ $student->foto ? 'text-green-800' : 'text-red-800' }}">
@@ -166,7 +194,7 @@
                 @endforelse
             </ul>
         </div>
-        
+
         {{-- KARTU KELUARGA --}}
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 flex items-center">
@@ -203,7 +231,7 @@
                             <span class="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded">{{ $exp->tipe }}</span>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            <span class="font-semibold">{{ $exp->posisi }}</span> 
+                            <span class="font-semibold">{{ $exp->posisi }}</span>
                             ({{ $exp->tanggal_mulai ? $exp->tanggal_mulai->format('M Y') : '?' }} - {{ $exp->tanggal_selesai ? $exp->tanggal_selesai->format('M Y') : '?' }})
                         </div>
                         @if($exp->tipe == 'Pekerjaan')
@@ -223,7 +251,7 @@
     <div class="lg:col-span-1">
         <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-gold-500 sticky top-6">
             <h3 class="font-bold text-lg text-gray-800 mb-4">Panel Keputusan</h3>
-            
+
             {{-- Status Saat Ini --}}
             <div class="mb-6 bg-gray-50 p-3 rounded-lg text-center">
                 <span class="text-xs text-gray-500 uppercase tracking-wide">Status Saat Ini</span>
@@ -232,7 +260,7 @@
 
             <form action="{{ route('admin.students.process-verify', $student->id) }}" method="POST">
                 @csrf
-                
+
                 {{-- Catatan Admin --}}
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Catatan Admin <span class="text-red-500">*</span></label>
@@ -245,11 +273,11 @@
                     <button type="submit" name="action" value="terima" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold shadow-md transition flex items-center justify-center group">
                         <i class="fa-solid fa-check-circle mr-2 group-hover:scale-110 transition"></i> TERIMA (Lolos Admin)
                     </button>
-                    
+
                     <button type="submit" name="action" value="revisi" class="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-bold shadow-md transition flex items-center justify-center">
                         <i class="fa-solid fa-rotate-left mr-2"></i> MINTA REVISI
                     </button>
-                    
+
                     <button type="submit" name="action" value="tolak" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold shadow-md transition flex items-center justify-center" onclick="return confirm('Yakin ingin menolak siswa ini secara permanen?')">
                         <i class="fa-solid fa-ban mr-2"></i> TOLAK SISWA
                     </button>

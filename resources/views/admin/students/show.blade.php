@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="space-y-8 pb-20">
-    
+
     {{-- HEADER PROFILE --}}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div class="flex items-center gap-6">
@@ -38,7 +38,7 @@
                         </span>
                     @endif
                 </div>
-                
+
                 {{-- PROGRESS BAR DATA --}}
                 @if(isset($student->data_completion))
                 <div class="mt-3 flex items-center gap-2">
@@ -57,10 +57,10 @@
             <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Aksi Verifikasi</h4>
             <form action="{{ route('admin.students.update', $student) }}" method="POST" class="flex gap-2">
                 @csrf @method('PUT')
-                
+
                 <input type="hidden" name="nama_lengkap" value="{{ $student->nama_lengkap }}">
                 <input type="hidden" name="email" value="{{ $student->email }}">
-                
+
                 <select name="status" class="flex-1 rounded-lg border-gray-300 text-sm focus:border-gold-500 focus:ring-gold-500">
                     <option value="Mendaftar" {{ $student->status == 'Mendaftar' ? 'selected' : '' }}>Mendaftar</option>
                     <option value="Menunggu Verifikasi" {{ $student->status == 'Menunggu Verifikasi' ? 'selected' : '' }}>Menunggu Verifikasi</option>
@@ -91,7 +91,7 @@
 
     {{-- GRID INFO --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {{-- CARD 1: FISIK --}}
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 md:col-span-1">
             <h3 class="font-bold text-lg text-gray-900 mb-4 border-b pb-2">Fisik & Kesehatan</h3>
@@ -115,7 +115,7 @@
                     <p class="text-xs text-gray-400 uppercase">No. HP Peserta (WA)</p>
                     <p class="font-medium text-gray-800">{{ $student->no_hp_peserta ?? '-' }}</p>
                 </div>
-                
+
                 <div>
                     <p class="text-xs text-gray-400 uppercase">Nomor KTP</p>
                     <p class="font-medium text-gray-800">{{ $student->nomor_ktp ?? '-' }}</p>
@@ -124,7 +124,7 @@
                     <p class="text-xs text-gray-400 uppercase">Nomor KK</p>
                     <p class="font-medium text-gray-800">{{ $student->nomor_kk ?? '-' }}</p>
                 </div>
-                
+
                 <div>
                     <p class="text-xs text-gray-400 uppercase">Tempat, Tgl Lahir</p>
                     <p class="font-medium text-gray-800">{{ $student->tempat_lahir }}, {{ $student->tanggal_lahir ? $student->tanggal_lahir->format('d F Y') : '-' }}</p>
@@ -150,14 +150,33 @@
                 <div class="sm:col-span-2 border-t pt-2">
                     <p class="text-xs text-gray-400 uppercase">Alamat KTP</p>
                     <p class="font-medium text-gray-800 mb-2">
-                        {{ $student->alamat_ktp ?? '-' }} 
+                        {{ $student->alamat_ktp ?? '-' }}
                         @if($student->kota_ktp || $student->provinsi_ktp)
                             <br><span class="text-xs text-gray-500">{{ $student->kota_ktp ?? '' }} {{ $student->provinsi_ktp ?? '' }}</span>
                         @endif
                     </p>
-                    
+
                     <p class="text-xs text-gray-400 uppercase">Alamat Domisili</p>
                     <p class="font-medium text-gray-800">{{ $student->alamat_domisili ?? '-' }}</p>
+                </div>
+                <div class="sm:col-span-2 border-t pt-4 mt-2">
+                    <p class="text-xs text-gray-400 uppercase mb-2">Tanda Tangan Digital</p>
+                    @if($student->tanda_tangan)
+                        <div class="inline-block relative group">
+                            <img src="{{ asset('storage/'.$student->tanda_tangan) }}"
+                                 class="h-20 w-auto object-contain border border-gray-200 rounded bg-white p-2">
+
+                            {{-- Tombol zoom kecil --}}
+                            <a href="{{ asset('storage/'.$student->tanda_tangan) }}" target="_blank"
+                               class="absolute top-1 right-1 bg-gray-800 text-white text-[10px] p-1 rounded opacity-0 group-hover:opacity-100 transition">
+                                <i class="fa-solid fa-expand"></i>
+                            </a>
+                        </div>
+                    @else
+                        <span class="px-3 py-1 bg-gray-100 text-gray-500 rounded text-xs italic border border-gray-200">
+                            Tidak dilampirkan
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -307,7 +326,7 @@
                         </td>
                         <td class="px-6 py-4">{{ $exp->posisi }}</td>
                         <td class="px-6 py-4">
-                            {{ $exp->tanggal_mulai ? \Carbon\Carbon::parse($exp->tanggal_mulai)->format('M Y') : '-' }} s/d 
+                            {{ $exp->tanggal_mulai ? \Carbon\Carbon::parse($exp->tanggal_mulai)->format('M Y') : '-' }} s/d
                             {{ $exp->tanggal_selesai ? \Carbon\Carbon::parse($exp->tanggal_selesai)->format('M Y') : 'Sekarang' }}
                         </td>
                         <td class="px-6 py-4">{{ $exp->gaji_akhir ?? '-' }}</td>
