@@ -322,9 +322,9 @@
         <td class="ttd-space" style="height: 100px; vertical-align: bottom; text-align: center;">
 
             {{-- [OPSIONAL] Jika ingin menampilkan TTD Digital (dari database) --}}
-            @if(isset($student->signature) && $student->signature)
+            {{-- @if(isset($student->signature) && $student->signature)
                 <img src="{{ public_path('storage/'.$student->signature) }}" style="height: 70px; width: auto; margin-bottom: 5px;" alt="TTD">
-            @endif
+            @endif --}}
 
         </td>
     </tr>
