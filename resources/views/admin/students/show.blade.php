@@ -159,25 +159,21 @@
                     <p class="text-xs text-gray-400 uppercase">Alamat Domisili</p>
                     <p class="font-medium text-gray-800">{{ $student->alamat_domisili ?? '-' }}</p>
                 </div>
-                <div class="sm:col-span-2 border-t pt-4 mt-2">
-                    <p class="text-xs text-gray-400 uppercase mb-2">Tanda Tangan Digital</p>
-                    @if($student->tanda_tangan)
-                        <div class="inline-block relative group">
-                            <img src="{{ asset('storage/'.$student->tanda_tangan) }}"
-                                 class="h-20 w-auto object-contain border border-gray-200 rounded bg-white p-2">
 
-                            {{-- Tombol zoom kecil --}}
-                            <a href="{{ asset('storage/'.$student->tanda_tangan) }}" target="_blank"
-                               class="absolute top-1 right-1 bg-gray-800 text-white text-[10px] p-1 rounded opacity-0 group-hover:opacity-100 transition">
-                                <i class="fa-solid fa-expand"></i>
-                            </a>
+                {{-- [BARU] TANDA TANGAN DIGITAL --}}
+                <div class="sm:col-span-2 border-t pt-3">
+                    <p class="text-xs text-gray-400 uppercase mb-2">Tanda Tangan Digital</p>
+                    @if($student->signature)
+                        <div class="bg-white border border-gray-100 rounded p-2 inline-block shadow-sm">
+                            <img src="{{ asset('storage/'.$student->signature) }}" class="h-16 w-auto object-contain mix-blend-multiply">
                         </div>
                     @else
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 rounded text-xs italic border border-gray-200">
+                        <span class="text-xs text-gray-400 italic bg-gray-50 px-3 py-1 rounded border border-gray-100">
                             Tidak dilampirkan
                         </span>
                     @endif
                 </div>
+
             </div>
         </div>
     </div>

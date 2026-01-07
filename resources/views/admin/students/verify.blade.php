@@ -79,33 +79,20 @@
                     </div>
                 </div>
 
-                <div class="col-span-2 border-t pt-4 mt-4">
-                    <span class="text-xs text-gray-500 block mb-2 font-bold uppercase tracking-wider">
-                        Tanda Tangan Peserta
-                    </span>
-                    <div class="flex items-center gap-4">
-                        @if($student->tanda_tangan)
-                            <div class="bg-gray-50 p-2 border border-gray-200 rounded-lg inline-block">
-                                {{-- Asumsi path storage --}}
-                                <img src="{{ asset('storage/'.$student->tanda_tangan) }}"
-                                     alt="Tanda Tangan"
-                                     class="h-16 w-auto object-contain mix-blend-multiply">
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                <i class="fa-solid fa-check-circle text-green-500"></i> Diunggah
-                            </div>
-                        @else
-                            <div class="h-16 w-48 bg-gray-100 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-xs italic">
-                                Belum ada tanda tangan
-                            </div>
-                            @if(!$student->tanda_tangan)
-                                <div class="text-xs text-red-500 font-bold ml-2">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Wajib Dicek!
-                                </div>
-                            @endif
-                        @endif
-                    </div>
+                {{-- [BARU] TANDA TANGAN PESERTA --}}
+                <div class="col-span-2 border-t pt-3 mt-1">
+                    <span class="text-gray-500 block text-xs mb-2">Tanda Tangan Peserta</span>
+                    @if($student->signature)
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 inline-block">
+                            <img src="{{ asset('storage/'.$student->signature) }}" alt="Tanda Tangan" class="h-16 w-auto object-contain mix-blend-multiply">
+                        </div>
+                    @else
+                        <div class="flex items-center text-red-500 text-xs italic bg-red-50 p-2 rounded border border-red-200">
+                            <i class="fa-solid fa-circle-exclamation mr-2"></i> Belum ada tanda tangan
+                        </div>
+                    @endif
                 </div>
+
             </div>
         </div>
 
