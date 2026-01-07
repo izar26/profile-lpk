@@ -4,65 +4,45 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Laporan Data Siswa</title>
     <style>
-        body {
-            font-family: sans-serif;
-            font-size: 10pt;
+        /* 1. ATURAN HALAMAN FISIK (GLOBAL) */
+        @page {
+            /* Paksa Ukuran Kertas A4 Portrait */
+            size: A4 portrait;
 
-            /* [BARU] Logic Background Watermark */
+            /* Margin halaman standar */
+            margin: 1cm 1.5cm;
+
+            /* LOGIKA BACKGROUND (WATERMARK) DI SEMUA HALAMAN */
             @if(isset($profile) && $profile->background_surat)
                 background-image: url('{{ public_path("storage/" . $profile->background_surat) }}');
                 background-repeat: no-repeat;
-                background-position: center;
-                background-size: cover;
+
+                /* POSISI: Tengah-tengah kertas */
+                background-position: center center;
+
+                /* UKURAN:
+                   - Jangan pakai 'cover' agar tidak penyok/terpotong.
+                   - Gunakan angka persentase (misal 60% - 80%) atau 'contain'.
+                   - Ini menjaga aspek rasio gambar asli Anda.
+                */
+                background-size: 80%;
             @endif
         }
 
-        /* --- HEADER / KOP SURAT --- */
-        .header-wrapper {
-            width: 100%;
-            margin-bottom: 20px;
+        body {
+            font-family: sans-serif;
+            font-size: 10pt;
+            /* Pastikan body tidak menimpa background @page */
+            background-color: transparent;
         }
+
+        /* --- KOP SURAT (Hanya Halaman 1) --- */
         .kop-image {
             width: 100%;
             height: auto;
             display: block;
             border-bottom: 2px solid #000;
-            margin-bottom: 10px;
-        }
-
-        /* Fallback Header Text Style */
-        .header-table {
-            width: 100%;
-            border-bottom: 3px double black;
-            padding-bottom: 10px;
             margin-bottom: 20px;
-        }
-        .header-table td {
-            border: none;
-            vertical-align: middle;
-        }
-        .logo-cell {
-            width: 15%;
-            text-align: center;
-        }
-        .text-cell {
-            width: 85%;
-            text-align: center;
-        }
-        .lpk-name {
-            font-size: 16pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 0;
-            color: #000; /* Hitam lebih standar utk laporan, emas opsional */
-        }
-        .lpk-address {
-            font-size: 10pt;
-            margin: 2px 0;
-        }
-        .lpk-contact {
-            font-size: 9pt;
-            font-style: italic;
         }
 
         /* --- DATA TABLE STYLE --- */
@@ -70,7 +50,9 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
-            background-color: rgba(255, 255, 255, 0.85); /* Putih transparan agar teks terbaca di atas watermark */
+            /* Beri latar belakang putih semi-transparan pada tabel
+               agar teks tetap terbaca jelas di atas watermark */
+            background-color: rgba(255, 255, 255, 0.85);
         }
         .table-data th, .table-data td {
             border: 1px solid #444;
@@ -80,16 +62,11 @@
             font-size: 9pt;
         }
         .table-data th {
-            background-color: #e0e0e0; /* Abu-abu muda standar */
+            background-color: #e0e0e0;
             font-weight: bold;
             text-align: center;
             text-transform: uppercase;
         }
-        /* Zebra Striping (Opsional) - Baris Genap agak gelap dikit */
-        .table-data tr:nth-child(even) {
-            background-color: rgba(0, 0, 0, 0.03);
-        }
-
         .text-center { text-align: center; }
         .badge {
             padding: 2px 5px;
@@ -103,31 +80,17 @@
 <body>
 
     {{-- 1. HEADER / KOP SURAT --}}
+    {{-- Karena diletakkan di dalam body (bukan @page), ini hanya muncul di Halaman 1 --}}
     <div class="header-wrapper">
         @if(isset($profile) && $profile->kop_surat)
-            {{-- OPSI A: Gambar Kop Full --}}
+            {{-- Tampilkan Gambar Kop Full --}}
             <img src="{{ public_path('storage/' . $profile->kop_surat) }}" class="kop-image" alt="Kop Surat">
         @else
-            {{-- OPSI B: Teks Manual (Default) --}}
-            <table class="header-table">
-                <tr>
-                    <td class="logo-cell">
-                        @if(isset($profile) && $profile->logo)
-                            <img src="{{ public_path('storage/' . $profile->logo) }}" width="70" height="auto">
-                        @endif
-                    </td>
-                    <td class="text-cell">
-                        <h1 class="lpk-name">{{ $profile->nama_lpk ?? config('app.name') }}</h1>
-                        @if(isset($profile))
-                            <p class="lpk-address">{{ $profile->alamat }}</p>
-                            <p class="lpk-contact">
-                                @if($profile->nomor_wa) Telp/WA: {{ $profile->nomor_wa }} @endif
-                                @if($profile->email) | Email: {{ $profile->email }} @endif
-                            </p>
-                        @endif
-                    </td>
-                </tr>
-            </table>
+            {{-- Fallback jika tidak ada gambar kop (Text Only) --}}
+            <div style="text-align: center; border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 20px;">
+                <h1 style="margin:0; font-size:16pt; text-transform:uppercase;">{{ $profile->nama_lpk ?? config('app.name') }}</h1>
+                <p style="margin:2px; font-size:10pt;">{{ $profile->alamat }}</p>
+            </div>
         @endif
     </div>
 
@@ -173,8 +136,9 @@
         </tbody>
     </table>
 
-    {{-- FOOTER / TANDA TANGAN (Opsional untuk Laporan) --}}
-    <div style="margin-top: 40px; float: right; width: 200px; text-align: center;">
+    {{-- FOOTER / TANDA TANGAN --}}
+    {{-- Menggunakan page-break-inside: avoid agar TTD tidak terpotong ke halaman baru sendirian --}}
+    <div style="margin-top: 40px; float: right; width: 200px; text-align: center; page-break-inside: avoid;">
         <p style="font-size: 10pt; margin-bottom: 60px;">
             Mengetahui,<br>
             Pimpinan
