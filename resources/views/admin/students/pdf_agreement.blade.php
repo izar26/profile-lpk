@@ -302,33 +302,43 @@
 
     <br>
 
-    <table class="ttd-table">
-        <tr>
-            <td colspan="2">
-                {{ $profile->kota_ktp ?? 'Cianjur' }}, {{ $tanggalSurat }}
-            </td>
-        </tr>
-        <tr>
-            <td width="50%"><b>PIHAK PERTAMA</b></td>
-            <td width="50%"><b>PIHAK KEDUA</b></td>
-        </tr>
-        <tr>
-            <td class="ttd-space" style="vertical-align: bottom;">
-                <div style="font-size: 8pt; color: #666;">(Materai 10.000)</div>
-            </td>
-            <td class="ttd-space"></td>
-        </tr>
-        <tr>
-            <td>
-                <b><u>{{ strtoupper($profile->nama_pimpinan) }}</u></b><br>
-                Direktur {{ $profile->nama_lpk }}
-            </td>
-            <td>
-                <b><u>{{ strtoupper($student->nama_lengkap) }}</u></b><br>
-                Peserta Pelatihan
-            </td>
-        </tr>
-    </table>
+    {{-- Tambahkan margin-top agar tidak nempel dengan paragraf sebelumnya --}}
+<table class="ttd-table" style="width: 100%; margin-top: 40px;">
+    <tr>
+        {{-- Tambahkan padding-bottom biar agak jauh dari "Pihak Pertama" --}}
+        <td colspan="2" style="padding-bottom: 20px;">
+            {{ $profile->kota_ktp ?? 'Cianjur' }}, {{ $tanggalSurat }}
+        </td>
+    </tr>
+    <tr>
+        <td width="50%"><b>PIHAK PERTAMA</b></td>
+        <td width="50%"><b>PIHAK KEDUA</b></td>
+    </tr>
+    <tr>
+        {{-- KUNCI UTAMA: Tambahkan height (misal 80px - 100px) --}}
+        <td class="ttd-space" style="height: 100px; vertical-align: bottom;">
+            <div style="font-size: 8pt; color: #666; margin-bottom: 5px;">(Materai 10.000)</div>
+        </td>
+        <td class="ttd-space" style="height: 100px; vertical-align: bottom; text-align: center;">
+
+            {{-- [OPSIONAL] Jika ingin menampilkan TTD Digital (dari database) --}}
+            @if(isset($student->signature) && $student->signature)
+                <img src="{{ public_path('storage/'.$student->signature) }}" style="height: 70px; width: auto; margin-bottom: 5px;" alt="TTD">
+            @endif
+
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top: 5px;">
+            <b><u>{{ strtoupper($profile->nama_pimpinan) }}</u></b><br>
+            <span style="font-size: 10pt;">Direktur {{ $profile->nama_lpk }}</span>
+        </td>
+        <td style="padding-top: 5px;">
+            <b><u>{{ strtoupper($student->nama_lengkap) }}</u></b><br>
+            <span style="font-size: 10pt;">Peserta Pelatihan</span>
+        </td>
+    </tr>
+</table>
 
     <table class="ttd-table" style="margin-top: 20px;">
         <tr>
