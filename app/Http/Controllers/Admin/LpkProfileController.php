@@ -19,7 +19,7 @@ class LpkProfileController extends Controller
             'nama_lpk' => 'LPK Baru',
             // Default value lain jika perlu
         ]);
-        
+
         return view('admin.lpk-profile.edit', compact('profile'));
     }
 
@@ -34,16 +34,20 @@ class LpkProfileController extends Controller
             'nama_lpk' => 'required|string|max:255',
             'nama_pimpinan' => 'nullable|string|max:255',
             'nomor_sk' => 'nullable|string|max:255',
-            
-            // Validasi Gambar
+
+            // Validasi Gambar Utama
             'logo' => 'nullable|image|max:2048',
             'gambar_hero' => 'nullable|image|max:4096',
             'gambar_tentang' => 'nullable|image|max:2048',
             'gambar_auth' => 'nullable|image|max:4096',
-            
-            // [BARU] Validasi Background Kartu (Max 4MB)
+
+            // Validasi Background Kartu (Max 4MB)
             'background_kartu' => 'nullable|image|max:4096',
-            
+
+            // [BARU] Validasi Kelengkapan Surat Menyurat
+            'kop_surat' => 'nullable|image|max:2048', // Format Landscape biasanya
+            'background_surat' => 'nullable|image|max:4096', // Format A4 Full
+
             'deskripsi_singkat' => 'nullable|string',
             'tagline' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
@@ -60,10 +64,18 @@ class LpkProfileController extends Controller
             'youtube_url' => 'nullable|string|max:255',
         ]);
 
-        // Kecualikan semua input file dari $data awal
-        $data = $request->except(['logo', 'gambar_hero', 'gambar_tentang', 'gambar_auth', 'background_kartu']);
+        // Kecualikan semua input file dari $data text biasa
+        $data = $request->except([
+            'logo',
+            'gambar_hero',
+            'gambar_tentang',
+            'gambar_auth',
+            'background_kartu',
+            'kop_surat',        // [BARU]
+            'background_surat'  // [BARU]
+        ]);
 
-        // Helper function untuk upload
+        // Helper function (Closure) untuk upload agar codingan rapi
         $uploadImage = function($field, $folder) use ($request, $profile, &$data) {
             if ($request->hasFile($field)) {
                 // Hapus file lama jika ada
@@ -77,15 +89,17 @@ class LpkProfileController extends Controller
 
         // Jalankan upload untuk setiap gambar
         $uploadImage('logo', 'logo_lpk');
-        $uploadImage('gambar_hero', 'logo_lpk');    
+        $uploadImage('gambar_hero', 'logo_lpk');
         $uploadImage('gambar_tentang', 'logo_lpk');
-        $uploadImage('gambar_auth', 'logo_lpk'); 
-        
-        // [BARU] Upload Background Kartu
-        $uploadImage('background_kartu', 'logo_lpk'); 
+        $uploadImage('gambar_auth', 'logo_lpk');
+        $uploadImage('background_kartu', 'logo_lpk');
+
+        // [BARU] Upload Aset Surat
+        $uploadImage('kop_surat', 'logo_lpk');
+        $uploadImage('background_surat', 'logo_lpk');
 
         $profile->update($data);
 
-        return redirect()->route('admin.lpk-profile.edit')->with('success', 'Profil LPK dan aset gambar berhasil diperbarui.');
+        return redirect()->route('admin.lpk-profile.edit')->with('success', 'Profil LPK, desain kartu, dan kop surat berhasil diperbarui.');
     }
 }

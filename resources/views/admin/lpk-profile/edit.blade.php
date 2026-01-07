@@ -6,7 +6,7 @@
 
 {{-- Menampilkan Pesan Sukses --}}
 @if (session('success'))
-    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
+    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
          class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-sm flex items-center justify-between transition-opacity duration-500">
         <div class="flex items-center">
             <i class="fa-solid fa-check-circle mr-2"></i>
@@ -37,33 +37,40 @@
     </div>
 @endif
 
-<form method="POST" action="{{ route('admin.lpk-profile.update') }}" enctype="multipart/form-data" 
-      x-data="{ activeTab: 'utama' }"> 
+<form method="POST" action="{{ route('admin.lpk-profile.update') }}" enctype="multipart/form-data"
+      x-data="{ activeTab: 'utama' }">
     @csrf
-    
+
     <div class="max-w-6xl mx-auto">
 
         {{-- Tab Navigation --}}
         <div class="flex overflow-x-auto border-b border-gray-200 mb-6 bg-white rounded-t-xl shadow-sm sticky top-0 z-20">
-            <button type="button" @click="activeTab = 'utama'" 
+            <button type="button" @click="activeTab = 'utama'"
                 :class="activeTab === 'utama' ? 'border-gold-500 text-gold-600 bg-gold-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all focus:outline-none whitespace-nowrap group">
                 <i class="fa-solid fa-circle-info mr-2 group-hover:scale-110 transition-transform"></i> Info Utama
             </button>
 
-            <button type="button" @click="activeTab = 'visual'" 
+            <button type="button" @click="activeTab = 'visual'"
                 :class="activeTab === 'visual' ? 'border-gold-500 text-gold-600 bg-gold-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all focus:outline-none whitespace-nowrap group">
-                <i class="fa-solid fa-images mr-2 group-hover:scale-110 transition-transform"></i> Visual & Media
+                <i class="fa-solid fa-images mr-2 group-hover:scale-110 transition-transform"></i> Visual & Kartu
             </button>
 
-            <button type="button" @click="activeTab = 'kontak'" 
+            {{-- [BARU] Tab Surat --}}
+            <button type="button" @click="activeTab = 'surat'"
+                :class="activeTab === 'surat' ? 'border-gold-500 text-gold-600 bg-gold-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all focus:outline-none whitespace-nowrap group">
+                <i class="fa-solid fa-file-signature mr-2 group-hover:scale-110 transition-transform"></i> Surat & Dokumen
+            </button>
+
+            <button type="button" @click="activeTab = 'kontak'"
                 :class="activeTab === 'kontak' ? 'border-gold-500 text-gold-600 bg-gold-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all focus:outline-none whitespace-nowrap group">
                 <i class="fa-solid fa-address-book mr-2 group-hover:scale-110 transition-transform"></i> Kontak & Lokasi
             </button>
 
-            <button type="button" @click="activeTab = 'visi'" 
+            <button type="button" @click="activeTab = 'visi'"
                 :class="activeTab === 'visi' ? 'border-gold-500 text-gold-600 bg-gold-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all focus:outline-none whitespace-nowrap group">
                 <i class="fa-solid fa-bullseye mr-2 group-hover:scale-110 transition-transform"></i> Visi Misi
@@ -79,7 +86,7 @@
                         <label class="block text-sm font-bold text-gray-700 mb-1">Nama LPK <span class="text-red-500">*</span></label>
                         <input type="text" name="nama_lpk" value="{{ old('nama_lpk', $profile->nama_lpk) }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-gold-500 focus:ring-gold-500 transition-colors">
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">Nama Pimpinan</label>
@@ -106,16 +113,16 @@
             {{-- TAB VISUAL & MEDIA --}}
             <div x-show="activeTab === 'visual'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
+
                     {{-- 1. Logo --}}
                     <div x-data="{ preview: '{{ $profile->logo ? asset('storage/'.$profile->logo) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Logo LPK</label>
                         <div class="border-2 border-dashed border-gray-300 rounded-xl h-64 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-                            
+
                             <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-image text-5xl"></i></div>
-                            
+
                             <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-contain p-4 z-0 transition-transform duration-500 group-hover:scale-105">
-                            
+
                             <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <div class="relative z-20">
@@ -131,15 +138,15 @@
                     {{-- 2. Background Auth --}}
                     <div x-data="{ preview: '{{ $profile->gambar_auth ? asset('storage/'.$profile->gambar_auth) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
                         <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center justify-between">
-                            Background Login & Register 
+                            Background Login & Register
                             <span class="bg-gold-100 text-gold-700 text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide">Baru</span>
                         </label>
                         <div class="border-2 border-dashed border-gray-300 rounded-xl h-64 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-                            
+
                             <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-image text-5xl"></i></div>
-                            
+
                             <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-110">
-                            
+
                             <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <div class="relative z-20">
@@ -156,11 +163,11 @@
                     <div x-data="{ preview: '{{ $profile->gambar_hero ? asset('storage/'.$profile->gambar_hero) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Gambar Hero (Beranda Utama)</label>
                         <div class="border-2 border-dashed border-gray-300 rounded-xl h-64 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-                            
+
                             <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-image text-5xl"></i></div>
-                            
+
                             <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-110">
-                            
+
                             <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <div class="relative z-20">
@@ -177,11 +184,11 @@
                     <div x-data="{ preview: '{{ $profile->gambar_tentang ? asset('storage/'.$profile->gambar_tentang) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Gambar 'Tentang Kami'</label>
                         <div class="border-2 border-dashed border-gray-300 rounded-xl h-64 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-                            
+
                             <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-image text-5xl"></i></div>
-                            
+
                             <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover:scale-110">
-                            
+
                             <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <div class="relative z-20">
@@ -201,21 +208,20 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <i class="fa-solid fa-id-card text-gold-500 mr-2"></i> Desain Kartu Siswa
                     </h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Input Background Kartu -->
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <label class="block text-sm font-medium text-gray-700 mb-3">
                                 Background ID Card (Custom)
                             </label>
-                            
+
                             <div class="flex items-start space-x-4">
                                 {{-- Preview Gambar Saat Ini --}}
                                 <div class="shrink-0">
                                     @if($profile->background_kartu)
                                         <div class="relative group">
-                                            <img src="{{ asset('storage/' . $profile->background_kartu) }}" 
-                                                 class="h-32 w-20 object-cover rounded-lg border border-gray-300 shadow-sm" 
+                                            <img src="{{ asset('storage/' . $profile->background_kartu) }}"
+                                                 class="h-32 w-20 object-cover rounded-lg border border-gray-300 shadow-sm"
                                                  alt="Background Kartu">
                                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition rounded-lg"></div>
                                         </div>
@@ -235,9 +241,9 @@
                                                   file:mr-4 file:py-2 file:px-4
                                                   file:rounded-full file:border-0
                                                   file:text-xs file:font-semibold
-                                                  file:bg-gold-50 file:text-gold-700
+                                                  file:bg-gold-5 file:text-gold-700
                                                   hover:file:bg-gold-100 transition cursor-pointer mb-2">
-                                    
+
                                     <p class="text-xs text-gray-500 leading-relaxed">
                                         <i class="fa-solid fa-circle-info mr-1 text-blue-500"></i>
                                         Format: <strong>JPG/PNG</strong>. Disarankan rasio Portrait (54mm x 86mm).<br>
@@ -246,6 +252,63 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- [BARU] TAB SURAT & DOKUMEN --}}
+            <div x-show="activeTab === 'surat'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
+                <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-800 rounded-r text-sm">
+                    <i class="fa-solid fa-info-circle mr-2"></i>
+                    <strong>Fitur Baru:</strong> Anda dapat mengunggah desain Kop Surat dan Watermark (Latar Belakang) hasil desain dari Canva/Photoshop. Sistem akan otomatis mengganti kop surat standar dengan gambar yang Anda unggah.
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {{-- 1. KOP SURAT --}}
+                    <div x-data="{ preview: '{{ $profile->kop_surat ? asset('storage/'.$profile->kop_surat) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Kop Surat (Header Dokumen)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl h-48 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
+
+                            <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-file-invoice text-4xl"></i></div>
+
+                            {{-- Object cover diganti contain agar kop surat terlihat utuh --}}
+                            <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-contain p-2 z-0 transition-transform duration-500">
+
+                            <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                            <div class="relative z-20">
+                                <label class="cursor-pointer px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm font-bold text-gray-700 hover:text-gold-600 hover:border-gold-400 hover:shadow-lg transition-all flex items-center gap-2 transform group-hover:-translate-y-1">
+                                    <i class="fa-solid fa-upload"></i> <span x-text="preview ? 'Ganti Kop' : 'Pilih Kop'"></span>
+                                    <input type="file" name="kop_surat" class="hidden" @change="handleFile($event)" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Disarankan format <strong>PNG/JPG</strong> lebar penuh (contoh: 2480px width). Gambar ini akan diletakkan di bagian paling atas setiap surat resmi.
+                        </p>
+                    </div>
+
+                    {{-- 2. BACKGROUND SURAT --}}
+                    <div x-data="{ preview: '{{ $profile->background_surat ? asset('storage/'.$profile->background_surat) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Background / Watermark Surat</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl h-48 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
+
+                            <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-file-shield text-4xl"></i></div>
+
+                            <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-cover z-0 opacity-50">
+
+                            <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                            <div class="relative z-20">
+                                <label class="cursor-pointer px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm font-bold text-gray-700 hover:text-gold-600 hover:border-gold-400 hover:shadow-lg transition-all flex items-center gap-2 transform group-hover:-translate-y-1">
+                                    <i class="fa-solid fa-upload"></i> <span x-text="preview ? 'Ganti Bg' : 'Pilih Bg'"></span>
+                                    <input type="file" name="background_surat" class="hidden" @change="handleFile($event)" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Gambar ini akan menjadi latar belakang penuh kertas A4. Gunakan gambar dengan transparansi tinggi (pudar) agar tidak menutupi teks surat.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -262,7 +325,7 @@
                         <textarea name="google_map_embed" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-gold-500 font-mono text-xs bg-gray-50">{{ old('google_map_embed', $profile->google_map_embed) }}</textarea>
                         <p class="text-xs text-gray-400 mt-1">Copy "Embed a map" dari Google Maps dan paste di sini (iframe).</p>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div><label class="block text-sm font-bold text-gray-700">Email</label><input type="email" name="email_lpk" value="{{ old('email_lpk', $profile->email_lpk) }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-gold-500"></div>
                         <div><label class="block text-sm font-bold text-gray-700">Website</label><input type="text" name="website_url" value="{{ old('website_url', $profile->website_url) }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-gold-500"></div>

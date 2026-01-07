@@ -13,6 +13,7 @@ class LpkProfile extends Model
     'nama_lpk', 'nama_pimpinan', 'nomor_sk', // [BARU]
     'logo', 'gambar_hero', 'gambar_tentang',
     'gambar_auth', 'background_kartu',
+    'background_surat', 'kop_surat',
     'deskripsi_singkat', 'tagline',
     'alamat', 'google_map_embed',
     'email_lpk', 'website_url',

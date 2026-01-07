@@ -9,14 +9,37 @@
             font-size: 12px;
             line-height: 1.5;
             color: #333;
+
+            /* [BARU] LOGIKA BACKGROUND WATERMARK */
+            @if(isset($profile) && $profile->background_surat)
+                /* Gunakan public_path agar dompdf bisa baca file lokal */
+                background-image: url('{{ public_path("storage/" . $profile->background_surat) }}');
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: cover; /* Atau contain, tergantung selera */
+            @endif
         }
-        
+
         /* --- KOP SURAT (HEADER) --- */
+        .header-wrapper {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Style untuk KOP GAMBAR (Full Image) */
+        .kop-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 2px solid #000; /* Opsional: garis bawah di gambar kop */
+            margin-bottom: 15px;
+        }
+
+        /* Style untuk KOP TEXT (Default Manual) */
         .header-table {
             width: 100%;
-            border-bottom: 3px double #000; /* Garis ganda di bawah kop */
+            border-bottom: 3px double #000;
             padding-bottom: 10px;
-            margin-bottom: 20px;
         }
         .logo-lpk {
             width: 80px;
@@ -61,6 +84,8 @@
         .content-table {
             width: 100%;
             margin-bottom: 10px;
+            /* Tambahkan background putih transparan agar teks terbaca jika watermark gelap */
+            background-color: rgba(255, 255, 255, 0.85);
         }
         .photo-container {
             width: 130px;
@@ -69,7 +94,7 @@
             padding-right: 15px;
         }
         .photo-img {
-            width: 3cm; /* Ukuran pas foto standar 3x4 */
+            width: 3cm;
             height: 4cm;
             object-fit: cover;
             border: 1px solid #000;
@@ -97,54 +122,63 @@
             float: right;
             width: 250px;
             text-align: center;
+            /* Background putih agar TTD jelas */
+            background-color: rgba(255, 255, 255, 0.6);
         }
         .tgl-surat {
             margin-bottom: 10px;
         }
         .jabatan {
             font-weight: bold;
-            margin-bottom: 60px; /* Ruang untuk tanda tangan */
+            margin-bottom: 60px;
         }
         .nama-pimpinan {
             font-weight: bold;
             text-decoration: underline;
         }
-        
+
         .status-box {
             font-weight: bold;
             padding: 5px 10px;
             border: 1px solid #000;
             display: inline-block;
             text-transform: uppercase;
+            background: #fff;
         }
     </style>
 </head>
 <body>
 
-    {{-- 1. KOP SURAT (Menggunakan Data LpkProfile jika ada, fallback ke teks statis) --}}
-    <table class="header-table">
-        <tr>
-            <td width="15%" style="vertical-align: middle; text-align: center;">
-                {{-- Gunakan public_path agar terbaca oleh DomPDF --}}
-                @if(isset($profile) && $profile->logo)
-                    <img src="{{ public_path('storage/' . $profile->logo) }}" class="logo-lpk">
-                @else
-                    {{-- Placeholder --}}
-                    <h3>LOGO</h3>
-                @endif
-            </td>
-            <td width="85%" class="header-text">
-                <h1 class="nama-lpk">{{ $profile->nama_lpk ?? 'LPK HACHIMITSU' }}</h1>
-                @if(isset($profile->nomor_sk))
-                    <p class="sk-lpk">Izin Dinas Tenaga Kerja No: {{ $profile->nomor_sk }}</p>
-                @endif
-                <p class="alamat-lpk">
-                    {{ $profile->alamat ?? 'Alamat LPK Belum Diisi' }} <br>
-                    Telp: {{ $profile->telepon_lpk ?? '-' }} | Email: {{ $profile->email_lpk ?? '-' }}
-                </p>
-            </td>
-        </tr>
-    </table>
+    {{-- 1. HEADER / KOP SURAT (LOGIKA DINAMIS) --}}
+    <div class="header-wrapper">
+        @if(isset($profile) && $profile->kop_surat)
+            {{-- OPSI A: Jika User Upload Gambar Kop Surat --}}
+            <img src="{{ public_path('storage/' . $profile->kop_surat) }}" class="kop-image" alt="Kop Surat">
+        @else
+            {{-- OPSI B: Tampilan Default (Teks & Logo Kecil) --}}
+            <table class="header-table">
+                <tr>
+                    <td width="15%" style="vertical-align: middle; text-align: center;">
+                        @if(isset($profile) && $profile->logo)
+                            <img src="{{ public_path('storage/' . $profile->logo) }}" class="logo-lpk">
+                        @else
+                            <h3>LOGO</h3>
+                        @endif
+                    </td>
+                    <td width="85%" class="header-text">
+                        <h1 class="nama-lpk">{{ $profile->nama_lpk ?? 'LPK HACHIMITSU' }}</h1>
+                        @if(isset($profile->nomor_sk))
+                            <p class="sk-lpk">Izin Dinas Tenaga Kerja No: {{ $profile->nomor_sk }}</p>
+                        @endif
+                        <p class="alamat-lpk">
+                            {{ $profile->alamat ?? 'Alamat LPK Belum Diisi' }} <br>
+                            Telp: {{ $profile->telepon_lpk ?? '-' }} | Email: {{ $profile->email_lpk ?? '-' }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        @endif
+    </div>
 
     {{-- 2. JUDUL DOKUMEN --}}
     <div class="document-title">BUKTI KELULUSAN ADMINISTRASI</div>
@@ -183,7 +217,7 @@
                         <td class="data-label">Tempat, Tgl Lahir</td>
                         <td class="data-separator">:</td>
                         <td class="data-value">
-                            {{ $student->tempat_lahir ?? '-' }}, 
+                            {{ $student->tempat_lahir ?? '-' }},
                             {{ $student->tanggal_lahir ? \Carbon\Carbon::parse($student->tanggal_lahir)->isoFormat('D MMMM Y') : '-' }}
                         </td>
                     </tr>
@@ -222,7 +256,7 @@
         </tr>
     </table>
 
-    <div style="margin-top: 20px; border: 1px dashed #000; padding: 10px; font-size: 11px;">
+    <div style="margin-top: 20px; border: 1px dashed #000; padding: 10px; font-size: 11px; background-color: rgba(255,255,255,0.8);">
         <strong>Catatan untuk Peserta:</strong>
         <ol style="margin-top: 5px; margin-bottom: 0; padding-left: 20px;">
             <li>Simpan kartu bukti ini sebagai syarat mengikuti tahapan selanjutnya (Wawancara).</li>
@@ -234,13 +268,11 @@
     {{-- 4. TANDA TANGAN PIMPINAN --}}
     <div class="signature-section">
         <div class="signature-box">
-            {{-- Mengambil Kota dari Profile LPK, atau Default --}}
             @php
                 $kota = 'Indonesia';
                 if(isset($profile->alamat)) {
                     $parts = explode(',', $profile->alamat);
-                    // Ambil bagian terakhir alamat sebagai Kota (Simple Logic)
-                    $kota = trim(end($parts)); 
+                    $kota = trim(end($parts));
                 }
             @endphp
 
@@ -248,12 +280,14 @@
                 {{ $kota }}, {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}
             </div>
             <div class="jabatan">Pimpinan LPK,</div>
-            
-            {{-- Nama Pimpinan --}}
+
+            {{-- Area Tanda Tangan (Space Kosong) --}}
+            {{-- Jika nanti ada TTD Digital Pimpinan, bisa di-load disini --}}
+
             <div class="nama-pimpinan">
                 {{ $profile->nama_pimpinan ?? '(Nama Pimpinan)' }}
             </div>
-            
+
             <div>Pimpinan / Direktur</div>
         </div>
         <div style="clear: both;"></div>
