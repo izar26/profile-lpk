@@ -102,86 +102,116 @@
 
                     <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
 
-    <div x-data="{ open: false }" class="relative">
-        <button @click="open = !open"
-            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+    {{-- START: DROPDOWN FIXED POSITION (SOLUSI 1) --}}
+    <div x-data="{
+            open: false,
+            top: 0,
+            left: 0,
+            toggle() {
+                this.open = !this.open;
+                if (this.open) {
+                    const rect = $refs.btn.getBoundingClientRect();
+                    // Posisi Top: Tepat di bawah tombol
+                    this.top = rect.bottom;
+                    // Posisi Left: Rata kanan dengan tombol (dikurangi lebar dropdown 192px/w-48)
+                    this.left = rect.right - 192;
+                }
+            }
+         }"
+         @scroll.window="open = false"
+         class="relative">
+
+        {{-- TOMBOL TRIGGER --}}
+        <button x-ref="btn" @click="toggle()" @click.away="open = false"
+            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition text-gray-700">
             Aksi
             <i class="fa-solid fa-caret-down ml-1"></i>
         </button>
 
-        <!-- Dropdown -->
+        {{-- ISI DROPDOWN (FIXED) --}}
         <div x-show="open"
-             @click.away="open = false"
-             x-transition.origin.top.right
-             class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border border-gray-100 z-50">
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="fixed z-50 w-48 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden text-left"
+             :style="`top: ${top}px; left: ${left}px`"
+             style="display: none;">
 
             <ul class="py-1 text-sm">
 
-                {{-- MENUNGGU VERIFIKASI --}}
+                {{-- OPSI 1: MENUNGGU VERIFIKASI --}}
                 @if($student->status == 'Menunggu Verifikasi')
 
                     <li>
                         <a href="{{ route('admin.students.verify', $student->id) }}"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-green-600 font-semibold">
-                            <i class="fa-solid fa-clipboard-check mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-green-50 text-green-600 font-semibold transition">
+                            <i class="fa-solid fa-clipboard-check mr-2 w-5 text-center"></i>
                             Verifikasi
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
-                            <i class="fa-solid fa-file-pdf mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                            <i class="fa-solid fa-file-pdf mr-2 w-5 text-center"></i>
                             Biodata PDF
                         </a>
                     </li>
 
+                {{-- OPSI 2: DATA SUDAH VERIFIED / NORMAL --}}
                 @else
 
                     <li>
                         <a href="{{ route('admin.students.export-id-card', ['ids' => $student->id]) }}" target="_blank"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100">
-                            <i class="fa-solid fa-id-card mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
+                            <i class="fa-solid fa-id-card mr-2 w-5 text-center text-gray-500"></i>
                             Cetak ID Card
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('admin.students.export-biodata', $student->id) }}" target="_blank"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
-                            <i class="fa-solid fa-file-pdf mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                            <i class="fa-solid fa-file-pdf mr-2 w-5 text-center"></i>
                             Biodata PDF
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('admin.students.export-agreement', $student->id) }}" target="_blank"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100">
-                            <i class="fa-solid fa-file-contract mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
+                            <i class="fa-solid fa-file-contract mr-2 w-5 text-center text-gray-500"></i>
                             Surat Perjanjian
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ route('admin.students.show', $student) }}"
-                           class="flex items-center px-4 py-2 hover:bg-gray-100 text-blue-600 font-semibold">
-                            <i class="fa-solid fa-circle-info mr-2"></i>
+                           class="flex items-center px-4 py-2 hover:bg-blue-50 text-blue-600 font-semibold transition">
+                            <i class="fa-solid fa-circle-info mr-2 w-5 text-center"></i>
                             Detail
                         </a>
                     </li>
 
+                    <div class="border-t border-gray-100 my-1"></div>
+
                     <li>
-                        <button onclick="loadEditStudent({{ $student->id }})"
-                           class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100">
-                            <i class="fa-solid fa-pen mr-2 text-indigo-600"></i>
+                        {{-- Tambahkan open = false agar menu menutup saat diklik --}}
+                        <button onclick="loadEditStudent({{ $student->id }});" @click="open = false"
+                           class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
+                            <i class="fa-solid fa-pen mr-2 w-5 text-center text-indigo-600"></i>
                             Edit
                         </button>
                     </li>
 
                     <li>
-                        <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ $student->nama_lengkap }}')"
-                           class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
-                            <i class="fa-solid fa-trash mr-2"></i>
+                        {{-- Tambahkan addslashes & open = false --}}
+                        <button onclick="siapkanHapusStudent('{{ route('admin.students.destroy', $student) }}', '{{ addslashes($student->nama_lengkap) }}');" @click="open = false"
+                           class="w-full text-left flex items-center px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                            <i class="fa-solid fa-trash mr-2 w-5 text-center"></i>
                             Hapus
                         </button>
                     </li>
@@ -191,6 +221,7 @@
             </ul>
         </div>
     </div>
+    {{-- END: DROPDOWN FIXED POSITION --}}
 
 </td>
 
