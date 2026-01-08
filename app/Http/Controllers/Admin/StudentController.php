@@ -9,8 +9,8 @@ use App\Models\User;
 use App\Models\LpkProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB; 
-use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
@@ -34,7 +34,7 @@ class StudentController extends Controller
                   ->orWhere('nomor_ktp', 'like', "%{$search}%");
             });
         }
-        
+
         if ($request->has('status') && $request->status != 'Semua') {
             $query->where('status', $request->status);
         }
@@ -44,7 +44,7 @@ class StudentController extends Controller
         if ($request->ajax()) {
             return view('admin.students.partials.table', compact('students'))->render();
         }
-        
+
         $programs = ProgramPelatihan::all();
 
         return view('admin.students.index', compact('students', 'programs'));
@@ -59,8 +59,8 @@ class StudentController extends Controller
             'nama_lengkap' => 'required|string|max:255',
             'nomor_ktp' => 'nullable|string|unique:students,nomor_ktp',
             'program_pelatihan_id' => 'nullable|exists:program_pelatihans,id',
-            'email' => 'required|email|unique:students,email|unique:users,email', 
-            'no_hp_peserta' => 'nullable|string|max:20', 
+            'email' => 'required|email|unique:students,email|unique:users,email',
+            'no_hp_peserta' => 'nullable|string|max:20',
             'status' => 'required',
             'alamat_domisili' => 'nullable|string',
             'foto' => 'nullable|image|max:2048',
@@ -69,7 +69,7 @@ class StudentController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            
+
             // 1. PROSES FOTO (JIKA ADA)
             $fotoPath = null;
             if ($request->hasFile('foto')) {
@@ -82,20 +82,20 @@ class StudentController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make('12345678'), // Password Default
                 'role' => 'siswa',
-                'foto' => $fotoPath, 
+                'foto' => $fotoPath,
             ]);
 
             // 3. BUAT DATA SISWA
             $data = $request->only([
-                'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email', 
+                'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
                 'no_hp_peserta', 'status', 'alamat_domisili'
             ]);
-            
-            $data['user_id'] = $user->id; 
-            $data['foto'] = $fotoPath; 
+
+            $data['user_id'] = $user->id;
+            $data['foto'] = $fotoPath;
 
             // Opsional: Isi alamat KTP dengan alamat domisili agar tidak null (untuk data awal)
-            $data['alamat_ktp'] = $request->alamat_domisili; 
+            $data['alamat_ktp'] = $request->alamat_domisili;
 
             Student::create($data);
         });
@@ -125,17 +125,17 @@ class StudentController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $student) {
-            
+
             // Ambil field yang diizinkan update dari Modal Admin (Quick Edit)
             $data = $request->only([
-                'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email', 
+                'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
                 'no_hp_peserta', 'status', 'alamat_domisili'
             ]);
 
             // Update Foto
             if ($request->hasFile('foto')) {
                 if ($student->foto) Storage::disk('public')->delete($student->foto);
-                
+
                 $path = $request->file('foto')->store('foto_siswa', 'public');
                 $data['foto'] = $path;
 
@@ -172,7 +172,7 @@ class StudentController extends Controller
         DB::transaction(function () use ($student) {
             // Hapus Foto
             if ($student->foto) Storage::disk('public')->delete($student->foto);
-            
+
             // Hapus Akun User
             if ($student->user) {
                 $student->user->delete();
@@ -200,40 +200,54 @@ class StudentController extends Controller
      * Buat akun user baru untuk siswa yang belum punya akun.
      */
     public function generateAccount(Student $student)
-    {
-        if ($student->user_id) {
-            return redirect()->back()->with('error', 'Siswa ini sudah memiliki akun login.');
-        }
+{
+    // 1. CEK DATA YATIM (Broken Reference)
+    // Jika user_id terisi, TAPI relasi user-nya null (tidak ditemukan di tabel users)
+    if ($student->user_id && !$student->user) {
+        // Bersihkan user_id agar bisa dibuatkan akun baru
+        $student->update(['user_id' => null]);
 
-        if (empty($student->email)) {
-            return redirect()->back()->with('error', 'Email siswa kosong. Harap isi email terlebih dahulu.');
-        }
-
-        if (User::where('email', $student->email)->exists()) {
-            return redirect()->back()->with('error', 'Email ini sudah digunakan user lain.');
-        }
-
-        DB::transaction(function () use ($student) {
-            $user = User::create([
-                'name' => $student->nama_lengkap,
-                'email' => $student->email,
-                'password' => Hash::make('12345678'),
-                'role' => 'siswa',
-                'foto' => $student->foto,
-            ]);
-
-            $student->update(['user_id' => $user->id]);
-        });
-
-        return redirect()->back()->with('success', 'Akun login berhasil dibuat! Password default: 12345678');
+        // Refresh model student agar user_id di memory jadi null
+        $student->refresh();
     }
+
+    // 2. CEK NORMAL (Jika user_id valid dan user-nya memang ada)
+    if ($student->user_id) {
+        return redirect()->back()->with('error', 'Siswa ini sudah memiliki akun login yang aktif.');
+    }
+
+    // --- Validasi Email (Tetap sama) ---
+    if (empty($student->email)) {
+        return redirect()->back()->with('error', 'Email siswa kosong. Harap isi email terlebih dahulu.');
+    }
+
+    // Cek apakah email sudah dipakai user lain (selain 'user hantu' yg mungkin sudah dihapus)
+    if (User::where('email', $student->email)->exists()) {
+        return redirect()->back()->with('error', 'Email ini sudah terdaftar di sistem sebagai user lain.');
+    }
+
+    // --- Proses Pembuatan Akun (Tetap sama) ---
+    DB::transaction(function () use ($student) {
+        $user = User::create([
+            'name' => $student->nama_lengkap,
+            'email' => $student->email,
+            'password' => Hash::make('12345678'),
+            'role' => 'siswa',
+            'foto' => $student->foto,
+        ]);
+
+        $student->update(['user_id' => $user->id]);
+    });
+
+    return redirect()->back()->with('success', 'Akun login berhasil dibuat! Password default: 12345678');
+}
 
     // --- FITUR EXPORT EXCEL ---
     public function exportExcel(Request $request)
     {
         // 1. Tangkap ID jika ada (dari checklist)
         $ids = $request->ids ? explode(',', $request->ids) : null;
-        
+
         // 2. Tentukan nama file
         $filename = 'laporan-siswa-lpk-' . date('d-m-Y-H-i') . '.xlsx';
 
@@ -245,19 +259,19 @@ class StudentController extends Controller
     public function exportPdf(Request $request)
     {
         $ids = $request->ids ? explode(',', $request->ids) : null;
-        
+
         $query = Student::with('program');
         if ($ids) {
             $query->whereIn('id', $ids);
         }
         $students = $query->get();
 
-        $profile = \App\Models\LpkProfile::first(); 
+        $profile = \App\Models\LpkProfile::first();
 
     // Kirim variable 'profile' ke view
     $pdf = Pdf::loadView('admin.students.pdf_view', compact('students', 'profile'))
               ->setPaper('a4', 'landscape'); // Landscape biar muat banyak kolom
-    
+
     return $pdf->download('laporan-siswa-lpk.pdf');
     }
 
@@ -266,14 +280,14 @@ class StudentController extends Controller
     {
         // 1. Load relasi siswa
         $student->load(['program', 'educations', 'families', 'experiences']);
-        
+
         // 2. Ambil Data Profil LPK (Ambil data pertama)
         $profile = LpkProfile::first();
 
         // 3. Kirim kedua variabel ($student dan $profile) ke View
         $pdf = Pdf::loadView('admin.students.pdf_biodata', compact('student', 'profile'))
                   ->setPaper('a4', 'portrait');
-        
+
         return $pdf->download('Bukti-Seleksi-'. \Str::slug($student->nama_lengkap) .'.pdf');
     }
 
@@ -283,7 +297,7 @@ class StudentController extends Controller
     {
         // 1. Load relasi 'documents' dan 'documents.type' (untuk ambil nama file)
         $student->load(['program', 'educations', 'families', 'experiences', 'documents.type']);
-        
+
         // 2. Ambil Master Data Dokumen untuk acuan pengecekan (Looping label)
 $documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')->get();
         return view('admin.students.verify', compact('student', 'documentTypes'));
@@ -303,21 +317,21 @@ $documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')
         DB::transaction(function () use ($request, $student) {
             if ($request->action == 'terima') {
                 $student->update([
-                    'status' => 'Wawancara', 
+                    'status' => 'Wawancara',
                     'verified_at' => now(),
-                    'admin_note' => null, 
+                    'admin_note' => null,
                 ]);
-            } 
+            }
             elseif ($request->action == 'revisi') {
                 $student->update([
                     'status' => 'Perlu Revisi',
                     'admin_note' => $request->admin_note,
                 ]);
-            } 
+            }
             elseif ($request->action == 'tolak') {
                 $student->update([
                     'status' => 'Ditolak',
-                    'verified_at' => now(), 
+                    'verified_at' => now(),
                     'admin_note' => $request->admin_note,
                 ]);
             }
@@ -363,7 +377,7 @@ $documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')
             // Opsi 1 & 3: Perorangan atau Pilihan Checkbox
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
-        } 
+        }
         elseif ($request->query('mode') == 'all') {
             // Opsi 2: Cetak Semua (Sesuai Filter Index)
             if ($request->has('search') && $request->search != '') {

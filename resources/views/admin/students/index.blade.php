@@ -11,6 +11,12 @@
     </div>
 @endif
 
+@if (session('error'))
+    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm flex items-center">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ session('error') }}
+    </div>
+@endif
+
 {{-- Alert Error --}}
 @if ($errors->any() && !session('openModalEdit') && !session('openModalTambah'))
     <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm">
@@ -22,14 +28,14 @@
 
 {{-- ================= TOOLBAR UTAMA ================= --}}
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-    
+
     <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
         <div class="relative w-full sm:w-64">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
             </div>
-            <input type="text" id="searchInput" 
-                   class="pl-10 w-full border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500" 
+            <input type="text" id="searchInput"
+                   class="pl-10 w-full border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500"
                    placeholder="Cari Nama / No KTP...">
         </div>
 
@@ -49,13 +55,13 @@
     </div>
 
     <div class="flex flex-wrap gap-3 w-full xl:w-auto justify-end">
-        
+
         {{-- GRUP TOMBOL CETAK --}}
         <div class="relative" x-data="{ open: false }">
             <button @click="open = !open" @click.away="open = false" class="px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium shadow-md flex items-center transition">
                 <i class="fa-solid fa-print mr-2"></i> Menu Cetak <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
             </button>
-            
+
             {{-- Dropdown Menu --}}
             <div x-show="open" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden" style="display: none;">
                 <div class="p-2 space-y-1">
@@ -144,11 +150,11 @@
 <div id="modalTambah" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
     <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-lg scale-90 opacity-0 transition-all duration-300 overflow-y-auto max-h-[90vh]">
         <h2 class="text-xl font-bold text-gray-900 p-6 border-b border-gray-200">Tambah Siswa Baru</h2>
-        
+
         <form action="{{ route('admin.students.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="p-6 space-y-4">
-                
+
                 {{-- Info Akun Otomatis --}}
                 <div class="bg-green-50 p-3 rounded-lg border border-green-100 mb-2 flex items-start">
                     <i class="fa-solid fa-circle-check text-green-600 mt-1 mr-3"></i>
@@ -157,7 +163,7 @@
                         <p class="text-xs text-green-600 mt-1">Username: Email | Password: <strong>12345678</strong></p>
                     </div>
                 </div>
-                
+
                 {{-- Grid Input Data --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -209,12 +215,12 @@
                     {{-- UPDATE: name="alamat_domisili" --}}
                     <textarea name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300"></textarea>
                 </div>
-                
+
                 {{-- CUSTOM UPLOAD FOTO DENGAN PREVIEW (AlpineJS) --}}
-                <div x-data="{ 
-                    photoPreviewUrl: null, 
-                    photoFilename: null, 
-                    previewPhoto(event) { 
+                <div x-data="{
+                    photoPreviewUrl: null,
+                    photoFilename: null,
+                    previewPhoto(event) {
                         const file = event.target.files[0];
                         if (file) {
                             this.photoFilename = file.name;
@@ -225,7 +231,7 @@
                             this.photoFilename = null;
                             this.photoPreviewUrl = null;
                         }
-                    } 
+                    }
                 }">
                     <label class="block text-sm mb-2 font-medium text-gray-700">Foto Siswa</label>
                     <div class="flex items-center gap-5">
@@ -319,7 +325,7 @@
                     {{-- UPDATE: id="edit_alamat_domisili", name="alamat_domisili" --}}
                     <textarea id="edit_alamat_domisili" name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm mb-1 font-medium text-gray-700">Ganti Foto</label>
                     <div class="flex items-center gap-4">
@@ -394,12 +400,12 @@
         // === FUNGSI UTAMA AJAX FETCH ===
         function fetchStudents(url = null) {
             let fetchUrl = url || "{{ route('admin.students.index') }}";
-            
+
             const searchValue = searchInput.value;
             const statusValue = statusFilter.value;
 
             const urlObj = new URL(fetchUrl, window.location.origin);
-            
+
             if (searchValue) {
                 urlObj.searchParams.set('search', searchValue);
             }
@@ -490,12 +496,12 @@
     }
 
     // --- FUNGSI CETAK KARTU ---
-    
+
     // 1. Cetak Berdasarkan Checkbox (Pilihan)
     function cetakKartuPilihan() {
         // Ambil semua checkbox yang dicentang
         const selected = document.querySelectorAll('.student-checkbox:checked');
-        
+
         if (selected.length === 0) {
             alert('Pilih minimal satu siswa pada tabel untuk mencetak kartu.');
             return;

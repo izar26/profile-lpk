@@ -61,7 +61,7 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                     Belum Ada Akun
                                 </span>
-                                <button onclick="siapkanGenerateAkun('{{ route('admin.students.generate-account', $student) }}', '{{ $student->nama_lengkap }}')" 
+                                <button onclick="siapkanGenerateAkun('{{ route('admin.students.generate-account', $student) }}', '{{ addslashes($student->nama_lengkap) }}')"
                                         class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
                                     <i class="fa-solid fa-key mr-1"></i> Buat Akun
                                 </button>
