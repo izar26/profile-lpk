@@ -6,7 +6,7 @@
                 <th class="w-10 px-6 py-3">
                     <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-gold-600 focus:ring-gold-500">
                 </th>
-                
+
                 <th class="w-1/4 px-6 py-3 text-left text-xs text-gray-500 uppercase font-bold tracking-wider">Pegawai</th>
                 <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase font-bold tracking-wider">Akun Login</th>
                 <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase font-bold tracking-wider">Jabatan</th>
@@ -18,7 +18,7 @@
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse ($employees as $emp)
                 <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
-                    
+
                     {{-- CHECKBOX ROW --}}
                     <td class="px-6 py-4">
                         <input type="checkbox" name="selected_ids[]" value="{{ $emp->id }}" class="employee-checkbox rounded border-gray-300 text-gold-600 focus:ring-gold-500">
@@ -60,7 +60,7 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                     Belum Ada Akun
                                 </span>
-                                <button onclick="siapkanGenerateAkun('{{ route('admin.employees.generate-account', $emp) }}', '{{ $emp->nama }}')" 
+                                <button onclick="siapkanGenerateAkun('{{ route('admin.employees.generate-account', $emp) }}', '{{ $emp->nama }}')"
                                         class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer flex items-center">
                                     <i class="fa-solid fa-key mr-1"></i> Buat Akun
                                 </button>
@@ -96,66 +96,95 @@
                     </td>
 
                     {{-- KOLOM AKSI --}}
-<td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                    <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
 
-    <div x-data="{ open: false }" class="relative">
-        <button @click="open = !open"
-            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+    {{-- START: DROPDOWN FIXED POSITION (SOLUSI 1) --}}
+    <div x-data="{
+            open: false,
+            top: 0,
+            left: 0,
+            toggle() {
+                this.open = !this.open;
+                if (this.open) {
+                    const rect = $refs.btn.getBoundingClientRect();
+                    // Posisi Top: Tepat di bawah tombol
+                    this.top = rect.bottom;
+                    // Posisi Left: Rata kanan dengan tombol (dikurangi lebar dropdown 192px/w-48)
+                    this.left = rect.right - 192;
+                }
+            }
+         }"
+         @scroll.window="open = false"
+         class="relative">
+
+        {{-- TOMBOL TRIGGER --}}
+        <button x-ref="btn" @click="toggle()" @click.away="open = false"
+            class="inline-flex items-center px-3 py-1.5 bg-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition text-gray-700">
             Aksi
             <i class="fa-solid fa-caret-down ml-1"></i>
         </button>
 
-        <!-- Dropdown -->
+        {{-- ISI DROPDOWN (FIXED) --}}
         <div x-show="open"
-             @click.away="open = false"
-             x-transition.origin.top.right
-             class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl border border-gray-100 z-50">
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="fixed z-50 w-48 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden text-left"
+             :style="`top: ${top}px; left: ${left}px`"
+             style="display: none;">
 
             <ul class="py-1 text-sm">
 
                 {{-- ID CARD --}}
                 <li>
-                    <a href="{{ route('admin.employees.export-id-card', ['ids' => $emp->id]) }}" 
+                    <a href="{{ route('admin.employees.export-id-card', ['ids' => $emp->id]) }}"
                        target="_blank"
-                       class="flex items-center px-4 py-2 hover:bg-gray-100">
-                        <i class="fa-solid fa-id-card mr-2 text-indigo-600"></i>
+                       class="flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
+                        <i class="fa-solid fa-id-card mr-2 w-5 text-center text-indigo-600"></i>
                         Cetak ID Card
                     </a>
                 </li>
 
                 {{-- BIODATA PDF --}}
                 <li>
-                    <a href="{{ route('admin.employees.export-biodata', $emp) }}" 
+                    <a href="{{ route('admin.employees.export-biodata', $emp) }}"
                        target="_blank"
-                       class="flex items-center px-4 py-2 hover:bg-gray-100 text-red-600">
-                        <i class="fa-solid fa-file-pdf mr-2"></i>
+                       class="flex items-center px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                        <i class="fa-solid fa-file-pdf mr-2 w-5 text-center"></i>
                         Biodata PDF
                     </a>
                 </li>
 
                 {{-- DETAIL --}}
                 <li>
-                    <a href="{{ route('admin.employees.show', $emp) }}" 
-                       class="flex items-center px-4 py-2 hover:bg-gray-100 text-blue-600 font-semibold">
-                        <i class="fa-solid fa-circle-info mr-2"></i>
+                    <a href="{{ route('admin.employees.show', $emp) }}"
+                       class="flex items-center px-4 py-2 hover:bg-blue-50 text-blue-600 font-semibold transition">
+                        <i class="fa-solid fa-circle-info mr-2 w-5 text-center"></i>
                         Detail
                     </a>
                 </li>
 
+                <div class="border-t border-gray-100 my-1"></div>
+
                 {{-- EDIT --}}
                 <li>
-                    <button onclick="loadEdit({{ $emp->id }})"
-                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100">
-                        <i class="fa-solid fa-pen-to-square mr-2 text-slate-600"></i>
+                    {{-- Tambah open=false --}}
+                    <button onclick="loadEdit({{ $emp->id }})" @click="open = false"
+                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
+                        <i class="fa-solid fa-pen-to-square mr-2 w-5 text-center text-slate-600"></i>
                         Edit
                     </button>
                 </li>
 
                 {{-- HAPUS --}}
                 <li>
-                    <button onclick="siapkanHapus('{{ route('admin.employees.destroy', $emp) }}', '{{ $emp->nama }}')"
-                        class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-rose-600">
-                        <i class="fa-solid fa-trash mr-2"></i>
+                    {{-- Tambah addslashes & open=false --}}
+                    <button onclick="siapkanHapus('{{ route('admin.employees.destroy', $emp) }}', '{{ addslashes($emp->nama) }}')" @click="open = false"
+                        class="w-full text-left flex items-center px-4 py-2 hover:bg-red-50 text-red-600 transition">
+                        <i class="fa-solid fa-trash mr-2 w-5 text-center"></i>
                         Hapus
                     </button>
                 </li>
@@ -164,6 +193,7 @@
 
         </div>
     </div>
+    {{-- END: DROPDOWN FIXED POSITION --}}
 
 </td>
 
