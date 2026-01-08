@@ -12,53 +12,49 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 
-        'program_pelatihan_id', 
-        
-        // Header
+        'user_id',
+        'program_pelatihan_id',
         'foto',
-
-        // Data Pribadi
-        'nama_lengkap', // [UPDATED] Sesuai Migrasi
-        'tempat_lahir', 
-        'tanggal_lahir', 
+        'nama_lengkap',
+        'tempat_lahir',
+        'tanggal_lahir',
         'jenis_kelamin',
-        'tinggi_badan', 
+        'tinggi_badan',
         'berat_badan',
-        'alamat_ktp', 
-        'kota_ktp', 
+        'alamat_ktp',
+        'kota_ktp',
         'provinsi_ktp',
         'alamat_domisili',
-        'status_pernikahan', 
+        'status_pernikahan',
         'agama',
-        
+
         // Identitas & Kontak
-        'nomor_ktp', 
+        'nomor_ktp',
         'nomor_kk',       // [Cite: Lampiran/Data Keluarga]
-        'nomor_paspor', 
+        'nomor_paspor',
         'nomor_npwp',
-        'email', 
+        'email',
         'golongan_darah',
-        'no_hp_peserta', 
+        'no_hp_peserta',
         'no_hp_ortu',
 
         // Pertanyaan Khusus
         'pernah_bekerja', // [NEW] Boolean field
 
         // Lampiran
-        'file_ktp', 
-        'file_kk', 
-        'file_ijazah', 
+        'file_ktp',
+        'file_kk',
+        'file_ijazah',
         'file_sertifikat_jlpt',
-        'file_rekomendasi_sekolah', 
+        'file_rekomendasi_sekolah',
         'file_izin_ortu',
 
         // Tanda Tangan
         'kota_pembuatan', // [NEW] Untuk isian kota di atas ttd
 
         // System
-        'status', 
-        'admin_note', 
+        'status',
+        'admin_note',
         'verified_at'
     ];
 
@@ -70,24 +66,24 @@ class Student extends Model
 
     // --- RELASI ---
 
-    public function program(): BelongsTo 
-    { 
-        return $this->belongsTo(ProgramPelatihan::class, 'program_pelatihan_id'); 
-    }
-    
-    public function user(): BelongsTo 
-    { 
-        return $this->belongsTo(User::class); 
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(ProgramPelatihan::class, 'program_pelatihan_id');
     }
 
-    public function educations(): HasMany 
-    { 
-        return $this->hasMany(StudentEducation::class, 'student_id'); 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
-    public function families(): HasMany 
-    { 
-        return $this->hasMany(StudentFamily::class, 'student_id'); 
+    public function educations(): HasMany
+    {
+        return $this->hasMany(StudentEducation::class, 'student_id');
+    }
+
+    public function families(): HasMany
+    {
+        return $this->hasMany(StudentFamily::class, 'student_id');
     }
 
     public function experiences(): HasMany
@@ -105,9 +101,9 @@ class Student extends Model
     {
         // Daftar field wajib sesuai Formulir Hachimitsu
         $fieldsToCheck = [
-            'nama_lengkap', 
+            'nama_lengkap',
             'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
-            'alamat_ktp', 'alamat_domisili', 
+            'alamat_ktp', 'alamat_domisili',
             'nomor_ktp', 'email', 'no_hp_peserta',
             'file_ktp', 'file_kk', 'file_ijazah', 'foto'
         ];
@@ -123,7 +119,7 @@ class Student extends Model
 
         // Cek relasi (Opsional: Tambahkan logika jika wajib mengisi minimal 1 keluarga/pendidikan)
         // Contoh sederhana:
-        // if ($this->families()->count() > 0) $filled++; 
+        // if ($this->families()->count() > 0) $filled++;
         // $total++; // Jangan lupa tambah total jika nambah kriteria
 
         $percentage = ($total > 0) ? ($filled / $total) * 100 : 0;

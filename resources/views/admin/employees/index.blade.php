@@ -12,6 +12,13 @@
 @endif
 
 {{-- Alert Error --}}
+@if (session('error'))
+    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm flex items-center">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ session('error') }}
+    </div>
+@endif
+
+{{-- Alert Validation --}}
 @if ($errors->any() && !session('openModalEdit') && !session('openModalTambah'))
     <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-sm">
         <ul class="list-disc list-inside">
@@ -22,15 +29,15 @@
 
 {{-- ================= TOOLBAR UTAMA ================= --}}
 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-    
+
     <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
         {{-- Input Pencarian --}}
         <div class="relative w-full sm:w-64">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
             </div>
-            <input type="text" id="searchInput" 
-                   class="pl-10 w-full border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500" 
+            <input type="text" id="searchInput"
+                   class="pl-10 w-full border-gray-300 rounded-lg focus:border-gold-500 focus:ring-gold-500"
                    placeholder="Cari Nama / NIP...">
         </div>
 
@@ -44,13 +51,13 @@
     </div>
 
     <div class="flex flex-wrap gap-3 w-full xl:w-auto justify-end">
-        
+
         {{-- MENU CETAK DROPDOWN --}}
         <div class="relative" x-data="{ open: false }">
             <button @click="open = !open" @click.away="open = false" class="px-4 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium shadow-md flex items-center transition">
                 <i class="fa-solid fa-print mr-2"></i> Menu Cetak <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
             </button>
-            
+
             <div x-show="open" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl z-50 border border-gray-100 overflow-hidden" style="display: none;">
                 <div class="p-2 space-y-1">
                     {{-- Opsi 1: Cetak ID Card Pilihan --}}
@@ -141,7 +148,7 @@
         <form action="{{ route('admin.employees.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="p-6 space-y-4">
-                
+
                 {{-- Info Akun Otomatis --}}
                 <div class="bg-green-50 p-3 rounded-lg border border-green-100 mb-2 flex items-start">
                     <i class="fa-solid fa-circle-check text-green-600 mt-1 mr-3"></i>
@@ -154,43 +161,64 @@
                     </div>
                 </div>
 
+                {{-- FORM GRID --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                    {{-- Kolom Kiri --}}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
+                            <input type="text" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">NIP</label>
+                            <input type="text" name="nip" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            {{-- UPDATE: Nomor KTP (Baru) --}}
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP (NIK)</label>
+                            <input type="text" name="nomor_ktp" maxlength="16" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Jabatan</label>
+                            <input type="text" name="jabatan" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300" placeholder="Contoh: Instruktur Las">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">NIP</label>
-                        <input type="text" name="nip" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+
+                    {{-- Kolom Kanan --}}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Email (Wajib Login)</label>
+                            <input type="email" name="email" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Telepon / WA</label>
+                            <input type="text" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Status Kepegawaian</label>
+                            <select name="status_kepegawaian" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                                <option value="Tetap">Tetap</option>
+                                <option value="Kontrak">Kontrak</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Magang">Magang</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Jabatan</label>
-                        <input type="text" name="jabatan" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300" placeholder="Contoh: Instruktur Las">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Status Kepegawaian</label>
-                        <select name="status_kepegawaian" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                            <option value="Tetap">Tetap</option>
-                            <option value="Kontrak">Kontrak</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Magang">Magang</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Email (Wajib Login)</label>
-                        <input type="email" name="email" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Telepon</label>
-                        <input type="text" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Lengkap</label>
-                    <textarea name="alamat" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
                 </div>
 
-                {{-- Upload Foto dengan Preview --}}
+                {{-- ALAMAT DIPISAH --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Sesuai KTP</label>
+                        <textarea name="alamat_ktp" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Domisili</label>
+                        <textarea name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
+                    </div>
+                </div>
+
+                {{-- Upload Foto --}}
                 <div x-data="{ photoPreviewUrl: null, previewPhoto(event) { const file = event.target.files[0]; if(file){ const reader = new FileReader(); reader.onload = (e) => { this.photoPreviewUrl = e.target.result; }; reader.readAsDataURL(file); } } }">
                     <label class="block text-sm mb-1 font-medium text-gray-700">Foto Pegawai</label>
                     <div class="flex items-center gap-4">
@@ -217,45 +245,68 @@
     <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-lg scale-90 opacity-0 transition-all duration-300">
         <h2 class="text-xl font-bold text-gray-900 p-6 border-b border-gray-200">Edit Data Pegawai</h2>
         <div id="edit-loading" class="hidden text-center py-10"><div class="loader mx-auto"></div></div>
-        
+
         <form id="formEdit" method="POST" enctype="multipart/form-data" class="hidden">
             @csrf @method('PUT')
             <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+
+                {{-- FORM GRID --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
+                            <input type="text" id="edit_nama" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">NIP</label>
+                            <input type="text" id="edit_nip" name="nip" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            {{-- UPDATE: Nomor KTP --}}
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP (NIK)</label>
+                            <input type="text" id="edit_nomor_ktp" name="nomor_ktp" maxlength="16" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Jabatan</label>
+                            <input type="text" id="edit_jabatan" name="jabatan" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Email (Update Login)</label>
+                            <input type="email" id="edit_email" name="email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Telepon</label>
+                            <input type="text" id="edit_telepon" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 font-medium text-gray-700">Status Kepegawaian</label>
+                            <select id="edit_status" name="status_kepegawaian" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                                <option value="Tetap">Tetap</option>
+                                <option value="Kontrak">Kontrak</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Magang">Magang</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ALAMAT DIPISAH --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" id="edit_nama" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat KTP</label>
+                        {{-- Perhatikan ID: edit_alamat_ktp --}}
+                        <textarea id="edit_alamat_ktp" name="alamat_ktp" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">NIP</label>
-                        <input type="text" id="edit_nip" name="nip" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Jabatan</label>
-                        <input type="text" id="edit_jabatan" name="jabatan" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Status Kepegawaian</label>
-                        <select id="edit_status" name="status_kepegawaian" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                            <option value="Tetap">Tetap</option>
-                            <option value="Kontrak">Kontrak</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Magang">Magang</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Email (Update Login)</label>
-                        <input type="email" id="edit_email" name="email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Telepon</label>
-                        <input type="text" id="edit_telepon" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Domisili</label>
+                        {{-- Perhatikan ID: edit_alamat_domisili --}}
+                        <textarea id="edit_alamat_domisili" name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Alamat</label>
-                    <textarea id="edit_alamat" name="alamat" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
-                </div>
+
                 <div>
                     <label class="block text-sm mb-1 font-medium text-gray-700">Ganti Foto</label>
                     <div class="flex items-center gap-4">
@@ -319,9 +370,9 @@
         let query = searchInput.value;
         let jabatan = jabatanFilter.value;
         let fetchUrl = url ? url : `{{ route('admin.employees.index') }}?search=${query}&jabatan=${jabatan}`;
-        
+
         tableContainer.style.opacity = '0.5';
-        
+
         fetch(fetchUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(response => response.text())
             .then(html => {
@@ -332,9 +383,7 @@
 
     // === 2. FUNGSI CETAK KARTU (BULK ACTIONS) ===
     function cetakKartuPilihan() {
-        // Ambil elemen checkbox dari partials/table
         const selected = document.querySelectorAll('.employee-checkbox:checked');
-        
         if (selected.length === 0) {
             alert('Pilih minimal satu pegawai pada tabel untuk mencetak kartu.');
             return;
@@ -342,8 +391,6 @@
 
         let ids = [];
         selected.forEach(cb => ids.push(cb.value));
-
-        // Redirect ke route export dengan parameter ids
         const url = `{{ route('admin.employees.export-id-card') }}?ids=${ids.join(',')}`;
         window.open(url, '_blank');
     }
@@ -351,8 +398,6 @@
     function cetakKartuSemua() {
         const query = searchInput.value;
         const jabatan = jabatanFilter.value;
-
-        // Build URL dengan filter saat ini
         let url = `{{ route('admin.employees.export-id-card') }}?mode=all`;
         if (query) url += `&search=${query}`;
         if (jabatan && jabatan !== 'Semua') url += `&jabatan=${jabatan}`;
@@ -362,7 +407,7 @@
         }
     }
 
-    // === 3. MODAL FUNCTIONS ===
+    // === 3. MODAL FUNCTIONS (LOAD EDIT UPDATED) ===
     function loadEdit(id) {
         openModal('modalEdit');
         document.getElementById('edit-loading').classList.remove('hidden');
@@ -371,13 +416,18 @@
         fetch(`/admin/employees/${id}/edit`)
             .then(res => res.json())
             .then(data => {
+                // UPDATE: Mapping ke kolom database baru
                 document.getElementById('edit_nama').value = data.nama;
                 document.getElementById('edit_nip').value = data.nip;
+                document.getElementById('edit_nomor_ktp').value = data.nomor_ktp; // Baru
                 document.getElementById('edit_jabatan').value = data.jabatan;
                 document.getElementById('edit_status').value = data.status_kepegawaian;
                 document.getElementById('edit_email').value = data.email;
                 document.getElementById('edit_telepon').value = data.telepon;
-                document.getElementById('edit_alamat').value = data.alamat;
+
+                // UPDATE: Alamat Dipecah
+                document.getElementById('edit_alamat_ktp').value = data.alamat_ktp;
+                document.getElementById('edit_alamat_domisili').value = data.alamat_domisili;
 
                 const imgPreview = document.getElementById('edit_foto_preview');
                 const imgPlaceholder = document.getElementById('edit_foto_placeholder');

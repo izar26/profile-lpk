@@ -10,14 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\EmployeesExport;
 
 class EmployeeController extends Controller
 {
+    /**
+     * Menampilkan daftar pegawai.
+     */
     public function index(Request $request)
     {
         $query = Employee::with('user')->latest();
@@ -39,7 +40,7 @@ class EmployeeController extends Controller
 
         $employees = $query->paginate(10);
 
-        // Ambil daftar jabatan unik untuk Dropdown
+        // Ambil daftar jabatan unik untuk Dropdown Filter
         $listJabatan = Employee::whereNotNull('jabatan')
                                 ->distinct()
                                 ->orderBy('jabatan', 'asc')
@@ -52,11 +53,15 @@ class EmployeeController extends Controller
         return view('admin.employees.index', compact('employees', 'listJabatan'));
     }
 
+    /**
+     * Menyimpan data pegawai baru (Data Dasar Saja).
+     */
     public function store(Request $request)
     {
         $request->validate([
             'nama' => 'required|string|max:255',
             'nip' => 'nullable|string|unique:employees,nip',
+            'nomor_ktp' => 'nullable|string|max:16|unique:employees,nomor_ktp',
             'jabatan' => 'required|string|max:100',
             'email' => 'required|email|unique:employees,email|unique:users,email',
             'foto' => 'nullable|image|max:2048',
@@ -68,7 +73,7 @@ class EmployeeController extends Controller
                 $fotoPath = $request->file('foto')->store('employee_foto', 'public');
             }
 
-            // 1. Buat User
+            // 1. Buat User Login
             $user = User::create([
                 'name' => $request->nama,
                 'email' => $request->email,
@@ -77,55 +82,108 @@ class EmployeeController extends Controller
                 'foto' => $fotoPath,
             ]);
 
-            // 2. Buat Employee
-            $data = $request->all();
+            // 2. Buat Data Employee
+            $data = $request->except(['foto', '_token', '_method']);
             $data['user_id'] = $user->id;
             $data['foto'] = $fotoPath;
+
             Employee::create($data);
         });
 
-        return redirect()->back()->with('success', 'Pegawai ditambahkan & Akun dibuat.');
+        return redirect()->back()->with('success', 'Pegawai ditambahkan & Akun dibuat (Pass: 12345678).');
     }
 
+    /**
+     * Update data pegawai (Hanya Data Dasar).
+     */
     public function update(Request $request, Employee $employee)
     {
         $request->validate([
             'nama' => 'required|string|max:255',
             'nip' => 'nullable|string|unique:employees,nip,' . $employee->id,
+            'nomor_ktp' => 'nullable|string|max:16|unique:employees,nomor_ktp,' . $employee->id,
             'email' => 'required|email|unique:employees,email,' . $employee->id,
             'foto' => 'nullable|image|max:2048',
         ]);
 
         DB::transaction(function () use ($request, $employee) {
-            $data = $request->all();
+            $data = $request->except(['foto', '_token', '_method']);
+
             if ($request->hasFile('foto')) {
                 if ($employee->foto) Storage::disk('public')->delete($employee->foto);
                 $data['foto'] = $request->file('foto')->store('employee_foto', 'public');
-                if ($employee->user) $employee->user->update(['foto' => $data['foto']]);
+
+                if ($employee->user) {
+                    $employee->user->update(['foto' => $data['foto']]);
+                }
             }
+
             $employee->update($data);
+
             if ($employee->user) {
-                $employee->user->update(['name' => $request->nama, 'email' => $request->email]);
+                $employee->user->update([
+                    'name' => $request->nama,
+                    'email' => $request->email
+                ]);
             }
         });
 
         return redirect()->back()->with('success', 'Data pegawai diperbarui.');
     }
 
+    /**
+     * Hapus pegawai.
+     */
     public function destroy(Employee $employee)
     {
         DB::transaction(function () use ($employee) {
             if ($employee->foto) Storage::disk('public')->delete($employee->foto);
+
+            // Hapus file fisik dokumen (database row terhapus otomatis via cascade)
+            foreach ($employee->documents as $doc) {
+                if (Storage::disk('public')->exists($doc->file_path)) {
+                    Storage::disk('public')->delete($doc->file_path);
+                }
+            }
+
             if ($employee->user) $employee->user->delete();
             $employee->delete();
         });
         return redirect()->back()->with('success', 'Pegawai dihapus.');
     }
 
+    /**
+     * Menampilkan Detail Pegawai.
+     * Admin hanya MELIHAT dokumen yang diupload pegawai.
+     */
+    public function show(Employee $employee)
+    {
+        // Tetap load 'documents' agar Admin bisa lihat list dokumennya
+        $employee->load(['user', 'educations', 'families', 'documents']);
+
+        return view('admin.employees.show', compact('employee'));
+    }
+
+    /**
+     * Ambil data JSON untuk modal edit (Data Dasar).
+     */
+    public function edit(Employee $employee)
+    {
+        return response()->json($employee);
+    }
+
+    /**
+     * Generate Akun Login Manual.
+     */
     public function generateAccount(Employee $employee)
     {
-        if ($employee->user_id) return back()->with('error', 'Sudah punya akun.');
-        if (User::where('email', $employee->email)->exists()) return back()->with('error', 'Email sudah dipakai user lain.');
+        if ($employee->user_id && !$employee->user) {
+            $employee->update(['user_id' => null]);
+            $employee->refresh();
+        }
+
+        if ($employee->user_id) return back()->with('error', 'Pegawai ini sudah memiliki akun login.');
+        if (User::where('email', $employee->email)->exists()) return back()->with('error', 'Email ini sudah digunakan user lain.');
 
         DB::transaction(function () use ($employee) {
             $user = User::create([
@@ -138,67 +196,53 @@ class EmployeeController extends Controller
             $employee->update(['user_id' => $user->id]);
         });
 
-        return back()->with('success', 'Akun pegawai berhasil dibuat.');
+        return back()->with('success', 'Akun pegawai berhasil dibuat (Pass: 12345678).');
     }
 
-    // --- FITUR EXPORT EXCEL ---
+    // ==================== FITUR EXPORT & CETAK ====================
+
     public function exportExcel(Request $request)
     {
-        // 1. Tangkap ID jika ada (dari checklist pilihan)
         $ids = $request->ids ? explode(',', $request->ids) : null;
-        
-        // 2. Buat nama file dengan timestamp agar unik
         $filename = 'laporan-pegawai-lpk-' . date('d-m-Y-H-i') . '.xlsx';
-
-        // 3. Download file Excel menggunakan class EmployeesExport
         return Excel::download(new EmployeesExport($ids), $filename);
     }
 
-    // --- FITUR EXPORT PDF LAPORAN ---
-    // App/Http/Controllers/Admin/EmployeeController.php
+    public function exportPdf(Request $request)
+    {
+        $ids = $request->ids ? explode(',', $request->ids) : null;
+        $query = Employee::query();
+        if ($ids) $query->whereIn('id', $ids);
+        $employees = $query->get();
 
-public function exportPdf(Request $request)
-{
-    // ... logic filter data employees (kode lama Anda) ...
-    $ids = $request->ids ? explode(',', $request->ids) : null;
-    $query = Employee::query();
-    if ($ids) $query->whereIn('id', $ids);
-    $employees = $query->get();
-    
-    // [TAMBAHAN] Ambil data profile LPK
-    $profile = \App\Models\LpkProfile::first(); 
+        $profile = LpkProfile::first();
 
-    // Kirim variable 'profile' ke view
-    $pdf = Pdf::loadView('admin.employees.pdf_view', compact('employees', 'profile'))
-              ->setPaper('a4', 'landscape');
-    
-    return $pdf->download('laporan-pegawai.pdf');
-}
+        $pdf = Pdf::loadView('admin.employees.pdf_view', compact('employees', 'profile'))
+                  ->setPaper('a4', 'landscape');
 
-    // --- FITUR EXPORT BIODATA PERORANGAN ---
+        return $pdf->download('laporan-pegawai.pdf');
+    }
+
     public function exportPdfIndividual(Employee $employee)
     {
-        // Ambil profil LPK untuk Header Kop Surat
+        // Load semua relasi agar tercetak lengkap di biodata
+        $employee->load(['educations', 'families', 'documents']);
         $profile = LpkProfile::first();
-        
+
         $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee', 'profile'));
         return $pdf->download('biodata-'.$employee->nama.'.pdf');
     }
 
-    // --- [BARU] FITUR CETAK ID CARD PEGAWAI ---
     public function exportIdCard(Request $request)
     {
         $query = Employee::query();
-        $profile = LpkProfile::first(); // Mengambil Logo & Nama LPK
+        $profile = LpkProfile::first();
 
-        // LOGIKA FILTER CETAK (Sama dengan Siswa)
         if ($request->has('ids')) {
-            // Opsi 1: Cetak Pilihan Checkbox
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
-        } 
+        }
         elseif ($request->query('mode') == 'all') {
-            // Opsi 2: Cetak Semua (Sesuai Filter Tabel)
             if ($request->has('search') && $request->search != '') {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
@@ -220,54 +264,37 @@ public function exportPdf(Request $request)
             return back()->with('error', 'Tidak ada data pegawai untuk dicetak.');
         }
 
-        // Load View PDF ID Card
-        // Menggunakan kertas A4 Portrait agar muat banyak kartu
         $pdf = Pdf::loadView('admin.employees.pdf_id_card', compact('employees', 'profile'))
                   ->setPaper('a4', 'portrait');
 
         return $pdf->stream('Kartu_Pegawai_LPK.pdf');
     }
 
-    // --- [BARU] PERSIAPAN HALAMAN VERIFIKASI PUBLIK ---
-    // Method ini menampilkan halaman input kode (Tgl Lahir) saat QR Code discan
+    // ==================== HALAMAN VERIFIKASI PUBLIK ====================
+    // Ini tetap ada karena untuk akses publik (scan QR), bukan Admin.
+
     public function verification(Employee $employee)
     {
-        // Kita gunakan view yang mirip dengan siswa nanti
-        // Pastikan Anda sudah membuat view-nya di langkah selanjutnya
         $profile = LpkProfile::first();
         return view('admin.employees.verify_public', compact('employee', 'profile'));
     }
-    
-    // Method untuk mengecek inputan kode verifikasi
+
     public function verificationCheck(Request $request)
     {
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'verifikasi_key' => 'required', // Format DDMMYYYY
+            'verifikasi_key' => 'required',
         ]);
 
         $employee = Employee::findOrFail($request->employee_id);
 
-        // Ubah tanggal lahir pegawai menjadi string DDMMYYYY
-        // Contoh: 1990-12-25 menjadi 25121990
         $dobKey = $employee->tanggal_lahir ? $employee->tanggal_lahir->format('dmY') : null;
 
         if ($dobKey && $request->verifikasi_key === $dobKey) {
-            // Jika Cocok, Tampilkan Halaman "Verified"
             $profile = LpkProfile::first();
             return view('admin.employees.verified_success', compact('employee', 'profile'));
         }
 
         return back()->with('error', 'Kode akses salah. Gunakan Tanggal Lahir (DDMMYYYY).');
-    }
-
-    public function show(Employee $employee)
-    {
-        return view('admin.employees.show', compact('employee'));
-    }
-
-    public function edit(Employee $employee)
-    {
-        return response()->json($employee);
     }
 }

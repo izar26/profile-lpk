@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Models\EmployeeEducation;
+use App\Models\EmployeeFamily;
+use App\Models\EmployeeDocument;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PegawaiAreaController extends Controller
@@ -15,7 +19,14 @@ class PegawaiAreaController extends Controller
      */
     public function dashboard()
     {
-        return view('pegawai.dashboard');
+        // Load data pegawai beserta relasinya untuk ditampilkan di dashboard
+        $employee = Auth::user()->employee;
+
+        if ($employee) {
+            $employee->load(['educations', 'families', 'documents']);
+        }
+
+        return view('pegawai.dashboard', compact('employee'));
     }
 
     /**
@@ -23,93 +34,206 @@ class PegawaiAreaController extends Controller
      */
     public function editBiodata()
     {
-        // Mengambil data pegawai dari user yang sedang login
         $employee = Auth::user()->employee;
-        
+
         if (!$employee) {
-            // Jika akun user belum terhubung ke data employees (kasus jarang terjadi jika sistem benar)
             return redirect()->route('pegawai.dashboard')->with('error', 'Data kepegawaian tidak ditemukan. Hubungi Admin.');
         }
 
-        // Variabel dikirim sebagai 'employee', BUKAN 'student'
+        // Load relasi agar bisa ditampilkan list-nya di form edit
+        $employee->load(['educations', 'families', 'documents']);
+
         return view('pegawai.biodata.edit', compact('employee'));
     }
 
     /**
-     * Memproses Update Biodata
-     * PERBAIKAN POIN 2: Hanya memvalidasi dan menyimpan kolom yang ada di Database.
+     * Memproses Update Biodata Utama (Data Diri, Alamat, Kontak)
      */
     public function updateBiodata(Request $request)
     {
         $employee = Auth::user()->employee;
 
-        // 1. Validasi Data (Sesuai kolom di tabel 'employees')
-        // Catatan: Jabatan, NIP, Status Kepegawaian tidak divalidasi disini karena itu wewenang Admin (Readonly di view)
-        $validated = $request->validate([
-            'nama'                => 'required|string|max:255',
-            'tempat_lahir'        => 'nullable|string|max:255',
-            'tanggal_lahir'       => 'nullable|date',
-            'jenis_kelamin'       => 'nullable|in:L,P',
-            'agama'               => 'nullable|string|max:50',
-            'pendidikan_terakhir' => 'nullable|string|max:50',
-            'alamat'              => 'nullable|string',
-            'kota'                => 'nullable|string|max:100',
-            'provinsi'            => 'nullable|string|max:100',
-            'kode_pos'            => 'nullable|string|max:20',
-            'telepon'             => 'nullable|string|max:50',
-            'linkedin'            => 'nullable|string|max:255',
-            'instagram'           => 'nullable|string|max:255',
-            'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Maks 2MB
+        // 1. Validasi Sesuai Kolom Database Baru
+        $request->validate([
+            'nama'              => 'required|string|max:255',
+            'nomor_ktp'         => 'required|string|max:16|unique:employees,nomor_ktp,' . $employee->id,
+            'nomor_kk'          => 'nullable|string|max:16',
+            'nomor_npwp'        => 'nullable|string|max:20',
+            'tempat_lahir'      => 'required|string|max:100',
+            'tanggal_lahir'     => 'required|date',
+            'jenis_kelamin'     => 'required|in:L,P',
+            'golongan_darah'    => 'nullable|string|max:5',
+            'agama'             => 'required|string|max:50',
+            'status_pernikahan' => 'nullable|string|max:50',
+            'tinggi_badan'      => 'nullable|numeric',
+            'berat_badan'       => 'nullable|numeric',
+
+            // Alamat & Kontak
+            'alamat_ktp'        => 'required|string',
+            'kota_ktp'          => 'required|string|max:100',
+            'provinsi_ktp'      => 'required|string|max:100',
+            'alamat_domisili'   => 'nullable|string',
+            'telepon'           => 'required|string|max:20',
+            'no_hp_keluarga_darurat' => 'nullable|string|max:20',
+            'email'             => 'required|email|unique:employees,email,' . $employee->id,
+            'instagram'         => 'nullable|string|max:255',
+
+            // Foto
+            'foto'              => 'nullable|image|max:2048',
         ]);
 
-        // Pisahkan foto dari array data utama untuk diproses terpisah
-        $dataToUpdate = collect($validated)->except('foto')->toArray();
+        DB::transaction(function () use ($request, $employee) {
 
-        // 2. Logika Upload Foto
-        if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
-            if ($employee->foto && Storage::disk('public')->exists($employee->foto)) {
-                Storage::disk('public')->delete($employee->foto);
+            $data = $request->except(['foto', '_token', '_method']);
+
+            // 2. Handle Upload Foto
+            if ($request->hasFile('foto')) {
+                // Hapus foto lama
+                if ($employee->foto && Storage::disk('public')->exists($employee->foto)) {
+                    Storage::disk('public')->delete($employee->foto);
+                }
+
+                $path = $request->file('foto')->store('employee_foto', 'public');
+                $data['foto'] = $path;
+
+                // Sync ke User Auth
+                Auth::user()->update(['foto' => $path]);
             }
-            
-            // Simpan foto baru
-            $path = $request->file('foto')->store('employee_foto', 'public');
-            $dataToUpdate['foto'] = $path;
 
-            // Sinkronisasi Foto ke Tabel Users (agar di navbar atas berubah)
-            // Cek jika user punya foto lama di tabel users, hapus juga
-            if(Auth::user()->foto && Auth::user()->foto != $path) {
-                  // Opsional: Hapus foto lama user jika beda path (biasanya sama)
-            }
-            Auth::user()->update(['foto' => $path]);
-        }
+            // 3. Update Tabel Employees
+            $employee->update($data);
 
-        // 3. Update Tabel Employees
-        $employee->update($dataToUpdate);
-        
-        // 4. Sinkronisasi Nama ke Tabel Users (agar nama login ikut berubah)
-        if ($request->has('nama')) {
-            Auth::user()->update(['name' => $request->nama]);
-        }
+            // 4. Sync Nama & Email ke User Auth
+            Auth::user()->update([
+                'name' => $request->nama,
+                'email' => $request->email
+            ]);
+        });
 
-        return redirect()->back()->with('success', 'Biodata berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Biodata utama berhasil diperbarui.');
     }
 
-    /**
-     * Cetak Biodata Diri Sendiri (PDF)
-     */
+    // =========================================================================
+    // FITUR: MANAJEMEN PENDIDIKAN (RIWAYAT)
+    // =========================================================================
+
+    public function storeEducation(Request $request)
+    {
+        $request->validate([
+            'jenjang' => 'required|string',
+            'nama_sekolah' => 'required|string',
+            'tahun_lulus' => 'required|numeric',
+        ]);
+
+        EmployeeEducation::create([
+            'employee_id' => Auth::user()->employee->id,
+            'jenjang' => $request->jenjang,
+            'nama_sekolah' => $request->nama_sekolah,
+            'jurusan' => $request->jurusan,
+            'tahun_masuk' => $request->tahun_masuk,
+            'tahun_lulus' => $request->tahun_lulus,
+            'nilai_akhir' => $request->nilai_akhir,
+        ]);
+
+        return back()->with('success', 'Riwayat pendidikan ditambahkan.');
+    }
+
+    public function destroyEducation($id)
+    {
+        $edu = EmployeeEducation::where('id', $id)->where('employee_id', Auth::user()->employee->id)->firstOrFail();
+        $edu->delete();
+        return back()->with('success', 'Data pendidikan dihapus.');
+    }
+
+    // =========================================================================
+    // FITUR: MANAJEMEN KELUARGA
+    // =========================================================================
+
+    public function storeFamily(Request $request)
+    {
+        $request->validate([
+            'nama_lengkap' => 'required|string',
+            'hubungan' => 'required|string',
+        ]);
+
+        EmployeeFamily::create([
+            'employee_id' => Auth::user()->employee->id,
+            'nama_lengkap' => $request->nama_lengkap,
+            'hubungan' => $request->hubungan,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'pekerjaan' => $request->pekerjaan,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        return back()->with('success', 'Data keluarga ditambahkan.');
+    }
+
+    public function destroyFamily($id)
+    {
+        $fam = EmployeeFamily::where('id', $id)->where('employee_id', Auth::user()->employee->id)->firstOrFail();
+        $fam->delete();
+        return back()->with('success', 'Data keluarga dihapus.');
+    }
+
+    // =========================================================================
+    // FITUR: UPLOAD DOKUMEN MANDIRI
+    // =========================================================================
+
+    public function storeDocument(Request $request)
+    {
+        $request->validate([
+            'nama_dokumen' => 'required|string|max:255',
+            'file_dokumen' => 'required|file|max:5120', // Max 5MB
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $path = $request->file('file_dokumen')->store('employee_documents', 'public');
+
+            EmployeeDocument::create([
+                'employee_id' => Auth::user()->employee->id,
+                'nama_dokumen' => $request->nama_dokumen,
+                'file_path' => $path,
+            ]);
+        });
+
+        return back()->with('success', 'Dokumen berhasil diunggah.');
+    }
+
+    public function destroyDocument($id)
+    {
+        // Pastikan hanya bisa menghapus dokumen milik sendiri
+        $doc = EmployeeDocument::where('id', $id)->where('employee_id', Auth::user()->employee->id)->firstOrFail();
+
+        DB::transaction(function () use ($doc) {
+            if (Storage::disk('public')->exists($doc->file_path)) {
+                Storage::disk('public')->delete($doc->file_path);
+            }
+            $doc->delete();
+        });
+
+        return back()->with('success', 'Dokumen dihapus.');
+    }
+
+    // =========================================================================
+    // FITUR: CETAK BIODATA
+    // =========================================================================
+
     public function printBiodata()
     {
         $employee = Auth::user()->employee;
-        
+
         if (!$employee) {
             return back()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
-        // Menggunakan view PDF yang sama dengan milik Admin agar efisien
+        // Load semua relasi agar tercetak di PDF
+        $employee->load(['educations', 'families', 'documents']);
+
+        // Menggunakan view PDF yang sama dengan Admin (Reusability)
         $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee'));
-        
-        // Download dengan nama file custom
+
         return $pdf->download('Biodata-'.str_slug($employee->nama).'.pdf');
     }
 }
