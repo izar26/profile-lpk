@@ -11,6 +11,7 @@ use App\Models\EmployeeEducation;
 use App\Models\EmployeeFamily;
 use App\Models\EmployeeDocument;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class PegawaiAreaController extends Controller
 {
@@ -234,6 +235,6 @@ class PegawaiAreaController extends Controller
         // Menggunakan view PDF yang sama dengan Admin (Reusability)
         $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee'));
 
-        return $pdf->download('Biodata-'.str_slug($employee->nama).'.pdf');
+        return $pdf->download('Biodata-' . Str::slug($employee->nama) . '.pdf');
     }
 }
