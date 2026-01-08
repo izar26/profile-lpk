@@ -257,61 +257,172 @@
             </div>
 
             {{-- [BARU] TAB SURAT & DOKUMEN --}}
-            <div x-show="activeTab === 'surat'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
-                <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-800 rounded-r text-sm">
-                    <i class="fa-solid fa-info-circle mr-2"></i>
-                    <strong>Fitur Baru:</strong> Anda dapat mengunggah desain Kop Surat dan Watermark (Latar Belakang) hasil desain dari Canva/Photoshop. Sistem akan otomatis mengganti kop surat standar dengan gambar yang Anda unggah.
+            <div x-show="activeTab === 'surat'" x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
+
+    {{-- Container Utama: Split 2 Kolom --}}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        {{-- KOLOM KIRI: Form Input --}}
+        <div class="lg:col-span-5 space-y-8">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r shadow-sm">
+                <h4 class="text-sm font-bold text-blue-800 mb-1">Panduan Desain</h4>
+                <p class="text-xs text-blue-700 leading-relaxed">
+                    Lihat simulasi di sebelah kanan. Pastikan Kop Surat tidak terlalu tinggi agar tidak menutupi isi surat.
+                </p>
+            </div>
+
+            {{-- 1. INPUT KOP SURAT --}}
+            <div x-data="{
+                fileName: null,
+                handleFile(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    this.fileName = file.name;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // Kirim data ke Alpine Parent (Preview Kertas)
+                        $dispatch('update-kop', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Upload Kop Surat</label>
+
+                <div class="flex items-center justify-center w-full">
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gold-500 transition-all group">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 group-hover:text-gold-500 transition-colors mb-3"></i>
+                            <p class="text-sm text-gray-500"><span class="font-semibold">Klik untuk upload</span> atau drag & drop</p>
+                            <p class="text-xs text-gray-400 mt-1">PNG, JPG (Max. 2MB)</p>
+                        </div>
+                        <input type="file" name="kop_surat" class="hidden" accept="image/*" @change="handleFile($event)">
+                    </label>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {{-- 1. KOP SURAT --}}
-                    <div x-data="{ preview: '{{ $profile->kop_surat ? asset('storage/'.$profile->kop_surat) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Kop Surat (Header Dokumen)</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl h-48 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-
-                            <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-file-invoice text-4xl"></i></div>
-
-                            {{-- Object cover diganti contain agar kop surat terlihat utuh --}}
-                            <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-contain p-2 z-0 transition-transform duration-500">
-
-                            <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                            <div class="relative z-20">
-                                <label class="cursor-pointer px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm font-bold text-gray-700 hover:text-gold-600 hover:border-gold-400 hover:shadow-lg transition-all flex items-center gap-2 transform group-hover:-translate-y-1">
-                                    <i class="fa-solid fa-upload"></i> <span x-text="preview ? 'Ganti Kop' : 'Pilih Kop'"></span>
-                                    <input type="file" name="kop_surat" class="hidden" @change="handleFile($event)" accept="image/*">
-                                </label>
-                            </div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Disarankan format <strong>PNG/JPG</strong> lebar penuh (contoh: 2480px width). Gambar ini akan diletakkan di bagian paling atas setiap surat resmi.
-                        </p>
-                    </div>
-
-                    {{-- 2. BACKGROUND SURAT --}}
-                    <div x-data="{ preview: '{{ $profile->background_surat ? asset('storage/'.$profile->background_surat) : null }}', handleFile(e){ const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = (evt) => this.preview = evt.target.result; r.readAsDataURL(f); } } }">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Background / Watermark Surat</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl h-48 flex flex-col items-center justify-center bg-gray-50 relative overflow-hidden group hover:border-gold-400 transition-all">
-
-                            <div x-show="!preview" class="text-gray-300 mb-3"><i class="fa-solid fa-file-shield text-4xl"></i></div>
-
-                            <img x-show="preview" :src="preview" class="absolute inset-0 w-full h-full object-cover z-0 opacity-50">
-
-                            <div x-show="preview" class="absolute inset-0 bg-black/40 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                            <div class="relative z-20">
-                                <label class="cursor-pointer px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-md text-sm font-bold text-gray-700 hover:text-gold-600 hover:border-gold-400 hover:shadow-lg transition-all flex items-center gap-2 transform group-hover:-translate-y-1">
-                                    <i class="fa-solid fa-upload"></i> <span x-text="preview ? 'Ganti Bg' : 'Pilih Bg'"></span>
-                                    <input type="file" name="background_surat" class="hidden" @change="handleFile($event)" accept="image/*">
-                                </label>
-                            </div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Gambar ini akan menjadi latar belakang penuh kertas A4. Gunakan gambar dengan transparansi tinggi (pudar) agar tidak menutupi teks surat.
-                        </p>
-                    </div>
+                {{-- File Info --}}
+                <div x-show="fileName" class="mt-2 text-xs text-green-600 flex items-center font-semibold">
+                    <i class="fa-solid fa-check-circle mr-1"></i> <span x-text="fileName"></span>
                 </div>
             </div>
+
+            {{-- 2. INPUT BACKGROUND --}}
+            <div x-data="{
+                fileName: null,
+                handleFile(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    this.fileName = file.name;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        $dispatch('update-bg', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Upload Watermark / Background</label>
+
+                <div class="flex items-center justify-center w-full">
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-gold-500 transition-all group">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <i class="fa-solid fa-image text-3xl text-gray-400 group-hover:text-gold-500 transition-colors mb-3"></i>
+                            <p class="text-sm text-gray-500"><span class="font-semibold">Klik untuk upload</span> background</p>
+                            <p class="text-xs text-gray-400 mt-1">Transparan lebih baik</p>
+                        </div>
+                        <input type="file" name="background_surat" class="hidden" accept="image/*" @change="handleFile($event)">
+                    </label>
+                </div>
+                 {{-- File Info --}}
+                 <div x-show="fileName" class="mt-2 text-xs text-green-600 flex items-center font-semibold">
+                    <i class="fa-solid fa-check-circle mr-1"></i> <span x-text="fileName"></span>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- KOLOM KANAN: LIVE PREVIEW KERTAS A4 --}}
+        {{-- Menggunakan Alpine Data untuk menampung state gambar --}}
+        <div class="lg:col-span-7 bg-gray-200 rounded-xl p-6 flex flex-col items-center justify-center relative overflow-hidden"
+             x-data="{
+                kopPreview: '{{ $profile->kop_surat ? asset('storage/'.$profile->kop_surat) : null }}',
+                bgPreview: '{{ $profile->background_surat ? asset('storage/'.$profile->background_surat) : null }}'
+             }"
+             @update-kop.window="kopPreview = $event.detail"
+             @update-bg.window="bgPreview = $event.detail">
+
+            <div class="absolute top-4 left-6 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <i class="fa-solid fa-eye"></i> Live Preview A4
+            </div>
+
+            {{-- KERTAS A4 (Skala diperkecil agar muat di layar) --}}
+            {{-- Aspect Ratio A4 adalah 210/297 (approx 0.707) --}}
+            <div class="bg-white shadow-2xl relative transition-all duration-500 transform hover:scale-[1.02]"
+                 style="width: 100%; max-width: 400px; aspect-ratio: 210/297;">
+
+                {{-- LAYER 1: BACKGROUND / WATERMARK --}}
+                <div class="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+                    <template x-if="bgPreview">
+                        <img :src="bgPreview" class="w-4/5 opacity-30 object-contain">
+                    </template>
+                    <template x-if="!bgPreview">
+                        <div class="text-gray-100 font-bold text-4xl -rotate-45 select-none">WATERMARK</div>
+                    </template>
+                </div>
+
+                {{-- LAYER 2: KOP SURAT --}}
+                <div class="absolute top-0 left-0 w-full z-10 bg-white/50 border-b border-dashed border-gray-200">
+                    <template x-if="kopPreview">
+                        <img :src="kopPreview" class="w-full object-contain" style="max-height: 150px;">
+                    </template>
+
+                    {{-- Placeholder jika kosong --}}
+                    <template x-if="!kopPreview">
+                        <div class="h-24 bg-gray-50 flex items-center justify-center text-gray-300 text-xs border-b border-gray-100">
+                            Area Kop Surat
+                        </div>
+                    </template>
+                </div>
+
+                {{-- LAYER 3: DUMMY TEXT (SIMULASI ISI SURAT) --}}
+                <div class="relative z-0 px-8 py-8 mt-32 space-y-3 opacity-60">
+                    {{-- Skeleton Text Effect --}}
+                    <div class="h-4 bg-gray-200 rounded w-1/3 mb-6"></div> {{-- Judul --}}
+
+                    <div class="space-y-2">
+                        <div class="h-2 bg-gray-200 rounded w-full"></div>
+                        <div class="h-2 bg-gray-200 rounded w-5/6"></div>
+                        <div class="h-2 bg-gray-200 rounded w-4/6"></div>
+                    </div>
+
+                    <div class="space-y-2 pt-4">
+                        <div class="h-2 bg-gray-200 rounded w-full"></div>
+                        <div class="h-2 bg-gray-200 rounded w-11/12"></div>
+                        <div class="h-2 bg-gray-200 rounded w-full"></div>
+                    </div>
+
+                    {{-- Tanda Tangan --}}
+                    <div class="flex justify-end pt-8">
+                        <div class="text-center">
+                            <div class="h-2 bg-gray-200 rounded w-24 mb-8"></div>
+                            <div class="h-2 bg-gray-200 rounded w-32"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- GARIS BATAS VISUAL (Safe Zone) --}}
+                <div class="absolute top-0 left-0 w-full h-32 border-b-2 border-red-400 border-dashed pointer-events-none opacity-0 hover:opacity-100 transition-opacity z-50 flex items-end justify-center">
+                    <span class="bg-red-400 text-white text-[10px] px-2 py-0.5 rounded-t font-bold">Batas Ideal Tinggi Kop</span>
+                </div>
+
+            </div>
+
+            <p class="text-xs text-gray-500 mt-4 text-center max-w-xs">
+                *Tampilan ini mensimulasikan hasil cetak pada kertas A4.
+            </p>
+
+        </div>
+    </div>
+</div>  
 
             {{-- TAB KONTAK --}}
             <div x-show="activeTab === 'kontak'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100">
