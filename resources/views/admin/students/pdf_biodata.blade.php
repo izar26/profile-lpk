@@ -3,67 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <title>Bukti Kelulusan Administrasi - {{ $student->nama_lengkap }}</title>
+
+    @php
+        function imageToBase64($path) {
+            $fullPath = public_path('storage/' . $path);
+            if(file_exists($fullPath)) {
+                $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                $data = file_get_contents($fullPath);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+            return null;
+        }
+
+        $bgImage = (isset($profile) && $profile->background_surat) ? imageToBase64($profile->background_surat) : null;
+        $kopImage = (isset($profile) && $profile->kop_surat) ? imageToBase64($profile->kop_surat) : null;
+        $logoImage = (isset($profile) && $profile->logo) ? imageToBase64($profile->logo) : null;
+        $studentFoto = ($student->foto) ? imageToBase64($student->foto) : null;
+    @endphp
+
     <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             line-height: 1.5;
             color: #333;
 
-            /* [BARU] LOGIKA BACKGROUND WATERMARK */
-            @if(isset($profile) && $profile->background_surat)
-                /* Gunakan public_path agar dompdf bisa baca file lokal */
-                background-image: url('{{ public_path("storage/" . $profile->background_surat) }}');
+            /* PADDING KHUSUS KOP */
+            padding-top: 4.5cm;
+            padding-left: 2cm;
+            padding-right: 2cm;
+            padding-bottom: 2cm;
+
+            @if($bgImage)
+                background-image: url("{{ $bgImage }}");
                 background-repeat: no-repeat;
-                background-position: center;
-                background-size: cover; /* Atau contain, tergantung selera */
+                background-position: center center;
+                background-size: 100% 100%;
             @endif
         }
 
-        /* --- KOP SURAT (HEADER) --- */
-        .header-wrapper {
+        /* KOP SURAT */
+        .kop-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-bottom: 20px;
+            height: 4.5cm;
+            z-index: -1;
+        }
+        .img-kop {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* Style untuk KOP GAMBAR (Full Image) */
-        .kop-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-bottom: 2px solid #000; /* Opsional: garis bawah di gambar kop */
-            margin-bottom: 15px;
-        }
-
-        /* Style untuk KOP TEXT (Default Manual) */
-        .header-table {
-            width: 100%;
+        /* HEADER MANUAL (FALLBACK) */
+        .header-manual {
+            position: absolute;
+            top: 0.5cm;
+            left: 1cm;
+            right: 1cm;
+            height: 3.5cm;
             border-bottom: 3px double #000;
-            padding-bottom: 10px;
         }
-        .logo-lpk {
-            width: 80px;
-            height: auto;
-        }
-        .header-text {
-            text-align: center;
-        }
-        .nama-lpk {
-            font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 0;
-            color: #000;
-        }
-        .sk-lpk {
-            font-size: 11px;
-            font-weight: bold;
-            margin: 2px 0;
-        }
-        .alamat-lpk {
-            font-size: 10px;
-            margin: 0;
-        }
+        .header-table { width: 100%; height: 100%; }
+        .header-table td { vertical-align: middle; }
+        .text-center { text-align: center; }
+        .nama-lpk { font-size: 18px; font-weight: bold; text-transform: uppercase; margin: 0; }
+        .sk-lpk { font-size: 11px; font-weight: bold; margin: 2px 0; }
+        .alamat-lpk { font-size: 10px; margin: 0; }
 
         /* --- JUDUL DOKUMEN --- */
         .document-title {
@@ -84,7 +97,6 @@
         .content-table {
             width: 100%;
             margin-bottom: 10px;
-            /* Tambahkan background putih transparan agar teks terbaca jika watermark gelap */
             background-color: rgba(255, 255, 255, 0.85);
         }
         .photo-container {
@@ -113,7 +125,7 @@
             vertical-align: top;
         }
 
-        /* --- BAGIAN TANDA TANGAN --- */
+        /* --- TANDA TANGAN --- */
         .signature-section {
             margin-top: 50px;
             width: 100%;
@@ -122,21 +134,12 @@
             float: right;
             width: 250px;
             text-align: center;
-            /* Background putih agar TTD jelas */
             background-color: rgba(255, 255, 255, 0.6);
-        }
-        .tgl-surat {
-            margin-bottom: 10px;
-        }
-        .jabatan {
-            font-weight: bold;
-            margin-bottom: 60px;
         }
         .nama-pimpinan {
             font-weight: bold;
             text-decoration: underline;
         }
-
         .status-box {
             font-weight: bold;
             padding: 5px 10px;
@@ -149,23 +152,19 @@
 </head>
 <body>
 
-    {{-- 1. HEADER / KOP SURAT (LOGIKA DINAMIS) --}}
-    <div class="header-wrapper">
-        @if(isset($profile) && $profile->kop_surat)
-            {{-- OPSI A: Jika User Upload Gambar Kop Surat --}}
-            <img src="{{ public_path('storage/' . $profile->kop_surat) }}" class="kop-image" alt="Kop Surat">
-        @else
-            {{-- OPSI B: Tampilan Default (Teks & Logo Kecil) --}}
+    {{-- KOP SURAT --}}
+    @if($kopImage)
+        <div class="kop-wrapper">
+            <img src="{{ $kopImage }}" class="img-kop">
+        </div>
+    @else
+        <div class="header-manual">
             <table class="header-table">
                 <tr>
-                    <td width="15%" style="vertical-align: middle; text-align: center;">
-                        @if(isset($profile) && $profile->logo)
-                            <img src="{{ public_path('storage/' . $profile->logo) }}" class="logo-lpk">
-                        @else
-                            <h3>LOGO</h3>
-                        @endif
+                    <td width="15%" class="text-center">
+                        @if($logoImage) <img src="{{ $logoImage }}" width="80"> @else <h3>LOGO</h3> @endif
                     </td>
-                    <td width="85%" class="header-text">
+                    <td width="85%" class="text-center">
                         <h1 class="nama-lpk">{{ $profile->nama_lpk ?? 'LPK HACHIMITSU' }}</h1>
                         @if(isset($profile->nomor_sk))
                             <p class="sk-lpk">Izin Dinas Tenaga Kerja No: {{ $profile->nomor_sk }}</p>
@@ -177,30 +176,28 @@
                     </td>
                 </tr>
             </table>
-        @endif
-    </div>
+        </div>
+    @endif
 
-    {{-- 2. JUDUL DOKUMEN --}}
+    {{-- JUDUL DOKUMEN --}}
     <div class="document-title">BUKTI KELULUSAN ADMINISTRASI</div>
     <div class="document-subtitle">Nomor Peserta: {{ sprintf('%04d', $student->id) }}/{{ date('Y') }}/LPK-HCM</div>
 
-    {{-- 3. ISI DATA PESERTA --}}
+    {{-- ISI DATA PESERTA --}}
     <table class="content-table">
         <tr>
-            {{-- KOLOM FOTO (KIRI) --}}
+            {{-- KOLOM FOTO --}}
             <td class="photo-container">
-                @if($student->foto)
-                    <img src="{{ public_path('storage/' . $student->foto) }}" class="photo-img">
+                @if($studentFoto)
+                    <img src="{{ $studentFoto }}" class="photo-img">
                 @else
-                    <div class="photo-img" style="display:flex; align-items:center; justify-content:center; border: 1px dashed #999;">
-                        No Photo
-                    </div>
+                    <div class="photo-img" style="display:flex; align-items:center; justify-content:center; border: 1px dashed #999;">No Photo</div>
                 @endif
                 <br>
                 <div style="margin-top: 5px; font-size: 10px; font-weight: bold;">FOTO PESERTA</div>
             </td>
 
-            {{-- KOLOM DATA (KANAN) --}}
+            {{-- KOLOM DATA --}}
             <td>
                 <table style="width: 100%;">
                     <tr>
@@ -265,7 +262,7 @@
         </ol>
     </div>
 
-    {{-- 4. TANDA TANGAN PIMPINAN --}}
+    {{-- TANDA TANGAN --}}
     <div class="signature-section">
         <div class="signature-box">
             @php
@@ -276,13 +273,10 @@
                 }
             @endphp
 
-            <div class="tgl-surat">
+            <div style="margin-bottom: 10px;">
                 {{ $kota }}, {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}
             </div>
-            <div class="jabatan">Pimpinan LPK,</div>
-
-            {{-- Area Tanda Tangan (Space Kosong) --}}
-            {{-- Jika nanti ada TTD Digital Pimpinan, bisa di-load disini --}}
+            <div style="font-weight: bold; margin-bottom: 60px;">Pimpinan LPK,</div>
 
             <div class="nama-pimpinan">
                 {{ $profile->nama_pimpinan ?? '(Nama Pimpinan)' }}

@@ -3,31 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>Surat Perjanjian Pelatihan</title>
+    
+    @php
+        function imageToBase64($path) {
+            $fullPath = public_path('storage/' . $path);
+            if(file_exists($fullPath)) {
+                $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                $data = file_get_contents($fullPath);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+            return null;
+        }
+
+        $bgImage = (isset($profile) && $profile->background_surat) ? imageToBase64($profile->background_surat) : null;
+        $kopImage = (isset($profile) && $profile->kop_surat) ? imageToBase64($profile->kop_surat) : null;
+    @endphp
+
     <style>
         /* Mengatur Margin Halaman PDF secara global */
         @page {
-            /* Margin standar kiri/kanan/bawah */
-            margin: 2cm 2cm 2cm 2cm;
+            size: A4 portrait;
+            margin: 0;
         }
 
         body {
             font-family: "Times New Roman", Times, serif;
-            font-size: 11pt; /* Sedikit dikecilkan agar muat */
+            font-size: 11pt;
             line-height: 1.3;
             color: #000;
+
+            /* PADDING KHUSUS KOP & MARGIN HALAMAN */
+            /* KOP TINGGI 4.5CM */
+            padding-top: 5cm; 
+            padding-left: 2cm;
+            padding-right: 2cm;
+            padding-bottom: 2cm;
+
+            @if($bgImage)
+                background-image: url("{{ $bgImage }}");
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: 100% 100%;
+            @endif
         }
 
-        /* KUNCI PERUBAHAN:
-           Jarak untuk Kop Surat Fisik.
-           Jika kop suratmu tingginya 4cm, ubah height: 4cm.
-           Ini hanya akan mendorong konten di halaman pertama.
-        */
-        .header-space {
+        /* KOP SURAT */
+        .kop-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 4.5cm; /* Sesuaikan angka ini dengan tinggi Kop Surat kertasmu */
-            display: block;
+            height: 4.5cm;
+            z-index: -1;
+        }
+        .img-kop {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
+        /* STYLE UMUM */
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-justify { text-align: justify; }
@@ -84,7 +119,7 @@
         .ttd-table {
             width: 100%;
             margin-top: 20px;
-            page-break-inside: avoid; /* Mencegah TTD terpotong halaman */
+            page-break-inside: avoid;
         }
         .ttd-table td {
             text-align: center;
@@ -95,7 +130,16 @@
 </head>
 <body>
 
-    <div class="header-space"></div>
+    {{-- KOP SURAT --}}
+    @if($kopImage)
+        <div class="kop-wrapper">
+            <img src="{{ $kopImage }}" class="img-kop">
+        </div>
+    @else
+        {{-- JIKA TIDAK ADA KOP IMAGE, BERI SPACE KOSONG ATAU MANUAL HEADER --}}
+        {{-- Untuk Agreement biasanya pakai KOP Image atau Pre-printed --}}
+        {{-- Kita biarkan kosong tapi layout tetap turun karena padding body --}}
+    @endif
 
     <div class="text-center text-bold mb-1" style="font-size: 14pt;">
         SURAT PERJANJIAN PELATIHAN BAHASA JEPANG ANTARA<br>

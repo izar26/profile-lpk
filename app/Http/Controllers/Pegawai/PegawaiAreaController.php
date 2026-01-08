@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\EmployeeEducation;
 use App\Models\EmployeeFamily;
 use App\Models\EmployeeDocument;
+use App\Models\LpkProfile;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 
@@ -232,8 +233,10 @@ class PegawaiAreaController extends Controller
         // Load semua relasi agar tercetak di PDF
         $employee->load(['educations', 'families', 'documents']);
 
+        $profile = LpkProfile::first();
+
         // Menggunakan view PDF yang sama dengan Admin (Reusability)
-        $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee'));
+        $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee', 'profile'));
 
         return $pdf->download('Biodata-' . Str::slug($employee->nama) . '.pdf');
     }

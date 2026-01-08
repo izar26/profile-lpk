@@ -218,7 +218,7 @@ class EmployeeController extends Controller
         $profile = LpkProfile::first();
 
         $pdf = Pdf::loadView('admin.employees.pdf_view', compact('employees', 'profile'))
-                  ->setPaper('a4', 'landscape');
+                  ->setPaper('a4', 'landscape'); // A4 Landscape untuk tabel lebar
 
         return $pdf->download('laporan-pegawai.pdf');
     }
@@ -229,7 +229,9 @@ class EmployeeController extends Controller
         $employee->load(['educations', 'families', 'documents']);
         $profile = LpkProfile::first();
 
-        $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee', 'profile'));
+        $pdf = Pdf::loadView('admin.employees.pdf_biodata', compact('employee', 'profile'))
+                  ->setPaper('a4', 'portrait'); // PASTIKAN A4 Portrait
+
         return $pdf->download('biodata-'.$employee->nama.'.pdf');
     }
 

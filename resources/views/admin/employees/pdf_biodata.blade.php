@@ -1,18 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Biodata Pegawai - {{ $employee->nama }}</title>
+    
+    @php
+        function imageToBase64($path) {
+            $fullPath = public_path('storage/' . $path);
+            if(file_exists($fullPath)) {
+                $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                $data = file_get_contents($fullPath);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+            return null;
+        }
+
+        $bgImage = (isset($profile) && $profile->background_surat) ? imageToBase64($profile->background_surat) : null;
+        $kopImage = (isset($profile) && $profile->kop_surat) ? imageToBase64($profile->kop_surat) : null;
+        $logoImage = (isset($profile) && $profile->logo) ? imageToBase64($profile->logo) : null;
+        $empFoto = ($employee->foto) ? imageToBase64($employee->foto) : null;
+    @endphp
+
     <style>
-        body { font-family: sans-serif; font-size: 10pt; line-height: 1.4; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .title { font-size: 14pt; font-weight: bold; text-transform: uppercase; }
-        .subtitle { font-size: 9pt; color: #555; }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            
+            /* PADDING KHUSUS KOP & MARGIN HALAMAN */
+            padding-top: 4.5cm;
+            padding-left: 2cm;
+            padding-right: 2cm;
+            padding-bottom: 2cm;
+
+            @if($bgImage)
+                background-image: url("{{ $bgImage }}");
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: 100% 100%;
+            @endif
+        }
+
+        /* KOP SURAT */
+        .kop-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4.5cm;
+            z-index: -1;
+        }
+        .img-kop {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* HEADER MANUAL (FALLBACK) */
+        .header-manual {
+            position: absolute;
+            top: 0.5cm;
+            left: 1cm;
+            right: 1cm;
+            height: 3.5cm;
+            border-bottom: 3px double #000;
+        }
+        .header-table { width: 100%; height: 100%; }
+        .header-table td { vertical-align: middle; }
+        .text-center { text-align: center; }
+        .nama-lpk { font-size: 18px; font-weight: bold; text-transform: uppercase; margin: 0; }
+        .sk-lpk { font-size: 11px; font-weight: bold; margin: 2px 0; }
+        .alamat-lpk { font-size: 10px; margin: 0; }
+
+        /* JUDUL DOKUMEN */
+        .document-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .document-subtitle {
+            text-align: center;
+            font-size: 10pt;
+            color: #555;
+            margin-bottom: 20px;
+        }
 
         /* Layout Foto */
         .photo-container {
             float: right; width: 3cm; height: 4cm;
             border: 1px solid #ccc; margin-left: 15px; margin-bottom: 10px;
             overflow: hidden;
+            background-color: #eee;
         }
         .photo-container img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -25,29 +111,54 @@
 
         /* Section Header */
         .section-title {
-            font-weight: bold; font-size: 11pt; background-color: #eee;
+            font-weight: bold; font-size: 11pt; background-color: rgba(238, 238, 238, 0.8);
             padding: 5px; margin-top: 15px; margin-bottom: 8px;
             border-bottom: 1px solid #999;
         }
 
         /* Tabel Data (Pendidikan/Keluarga) */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9pt; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9pt; background-color: rgba(255, 255, 255, 0.8); }
         table th, table td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
-        table th { background-color: #f5f5f5; text-align: center; }
+        table th { background-color: rgba(245, 245, 245, 0.9); text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="title">Biodata Pegawai</div>
-        <div class="subtitle">{{ config('app.name', 'LPK Profile') }}</div>
-    </div>
+    {{-- KOP SURAT --}}
+    @if($kopImage)
+        <div class="kop-wrapper">
+            <img src="{{ $kopImage }}" class="img-kop">
+        </div>
+    @else
+        <div class="header-manual">
+            <table class="header-table">
+                <tr>
+                    <td width="15%" class="text-center">
+                        @if($logoImage) <img src="{{ $logoImage }}" width="80"> @else <h3>LOGO</h3> @endif
+                    </td>
+                    <td width="85%" class="text-center">
+                        <h1 class="nama-lpk">{{ $profile->nama_lpk ?? 'NAMA LPK' }}</h1>
+                        @if(isset($profile->nomor_sk))
+                            <p class="sk-lpk">Izin Dinas Tenaga Kerja No: {{ $profile->nomor_sk }}</p>
+                        @endif
+                        <p class="alamat-lpk">
+                            {{ $profile->alamat ?? 'Alamat LPK Belum Diisi' }} <br>
+                            Telp: {{ $profile->telepon_lpk ?? '-' }} | Email: {{ $profile->email_lpk ?? '-' }}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    @endif
+
+    {{-- JUDUL --}}
+    <div class="document-title">Biodata Pegawai</div>
+    <div class="document-subtitle">{{ config('app.name', 'LPK Profile') }}</div>
 
     {{-- FOTO --}}
     <div class="photo-container">
-        @if($employee->foto)
-            {{-- Menggunakan public_path agar terbaca oleh DOMPDF --}}
-            <img src="{{ public_path('storage/' . $employee->foto) }}">
+        @if($empFoto)
+            <img src="{{ $empFoto }}">
         @else
             <div style="text-align: center; padding-top: 50px; color: #aaa; font-size: 8pt;">No Photo</div>
         @endif
@@ -153,7 +264,7 @@
     </table>
 
     {{-- TANDA TANGAN --}}
-    <div style="margin-top: 40px; float: right; width: 220px; text-align: center;">
+    <div style="margin-top: 40px; float: right; width: 220px; text-align: center; page-break-inside: avoid;">
         <p>Dicetak Tanggal: {{ date('d F Y') }}</p>
         <br><br><br>
         <p style="border-top: 1px solid #000; font-weight: bold; display: inline-block; min-width: 150px;">

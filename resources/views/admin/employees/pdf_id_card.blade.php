@@ -3,7 +3,7 @@
 <head>
     <title>Cetak Kartu Pegawai</title>
     <style>
-        @page { margin: 10mm; }
+        @page { size: A4 portrait; margin: 10mm; }
         body { font-family: Arial, Helvetica, sans-serif; background-color: #fff; margin: 0; padding: 0; }
 
         .container { width: 100%; display: block; }

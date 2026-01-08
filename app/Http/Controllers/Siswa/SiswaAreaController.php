@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\LpkProfile;
 use App\Models\ProgramPelatihan;
 use App\Models\RefDocumentType;
 use App\Models\StudentDocument;
@@ -27,8 +28,10 @@ class SiswaAreaController extends Controller
             return back()->with('error', 'Data biodata belum tersedia.');
         }
 
+        $profile = LpkProfile::first();
+
         // Pastikan file view PDF ini ada
-        $pdf = Pdf::loadView('admin.students.pdf_biodata', compact('student'));
+        $pdf = Pdf::loadView('admin.students.pdf_biodata', compact('student', 'profile'));
 
         return $pdf->download('biodata-' . \Str::slug($student->nama_lengkap) . '.pdf');
     }
