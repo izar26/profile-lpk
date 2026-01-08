@@ -9,6 +9,8 @@ class EmployeeFamily extends Model
 {
     use HasFactory;
 
+    protected $table = 'employee_families';
+
     protected $fillable = [
         'employee_id',
         'hubungan',          // Istri, Anak, Ayah, dll
