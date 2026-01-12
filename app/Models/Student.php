@@ -13,6 +13,7 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
+        'participant_number',
         'program_pelatihan_id',
         'foto',
         'nama_lengkap',
@@ -63,6 +64,34 @@ class Student extends Model
         'verified_at' => 'datetime',
         'pernah_bekerja' => 'boolean', // Casting otomatis ke true/false
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($student) {
+            $now = now();
+            $month = $now->format('m');
+            $year = $now->format('Y');
+            $prefix = 'HGS';
+
+            // Cari nomor urut terakhir di bulan & tahun ini
+            $latestStudent = self::whereYear('created_at', $year)
+                                 ->whereMonth('created_at', $month)
+                                 ->whereNotNull('participant_number')
+                                 ->latest('id')
+                                 ->first();
+            
+            $sequence = 1;
+            if ($latestStudent) {
+                // Format: HGS/002/10/2025
+                $parts = explode('/', $latestStudent->participant_number);
+                if (count($parts) === 4) {
+                     $sequence = intval($parts[1]) + 1;
+                }
+            }
+            
+            $student->participant_number = sprintf('%s/%03d/%s/%s', $prefix, $sequence, $month, $year);
+        });
+    }
 
     // --- RELASI ---
 

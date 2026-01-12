@@ -6,6 +6,7 @@
                     {{-- <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-gold-600 focus:ring-gold-500"> --}}
                 </th>
                 <th class="w-1/4 px-6 py-3 text-left text-xs text-gray-500 uppercase">Siswa</th>
+                <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase">No. Peserta</th>
                 <th class="w-1/5 px-6 py-3 text-left text-xs text-gray-500 uppercase">Akun Login</th>
                 <th class="w-1/6 px-6 py-3 text-left text-xs text-gray-500 uppercase">Program</th>
                 <th class="w-1/5 px-6 py-3 text-left text-xs text-gray-500 uppercase">Kontak</th>
@@ -41,6 +42,13 @@
                                     ID: {{ $student->nomor_ktp ?? '-' }}
                                 </div>
                             </div>
+                        </div>
+                    </td>
+
+                    {{-- KOLOM NO PESERTA --}}
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-mono text-gray-700 bg-gray-50 px-2 py-1 rounded inline-block whitespace-nowrap">
+                             {{ $student->participant_number ?? '-' }}
                         </div>
                     </td>
 
