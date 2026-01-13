@@ -11,7 +11,8 @@
         .card-wrapper { 
             width: 54mm; 
             height: 86mm; 
-            float: left; 
+            display: inline-block; 
+            vertical-align: top;
             margin-right: 5mm; 
             margin-bottom: 5mm; 
             position: relative; 
