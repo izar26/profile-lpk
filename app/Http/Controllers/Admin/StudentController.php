@@ -56,20 +56,30 @@ class StudentController extends Controller
         $month = $now->format('m');
         $year = $now->format('Y');
 
-        // Cari nomor urut terakhir di bulan & tahun ini
-        $latestStudent = Student::whereYear('created_at', $year)
-                             ->whereMonth('created_at', $month)
-                             ->whereNotNull('participant_number')
-                             ->latest('id')
-                             ->first();
+        // Cari semua nomor peserta yang memiliki akhiran bulan & tahun ini
+        // Format standar: HGS/{seq}/{month}/{year}
+        // Kita cari yang mengandung /month/year di akhir
+        $suffix = "/{$month}/{$year}";
+
+        $existingSequences = Student::where('participant_number', 'like', "%{$suffix}")
+                             ->pluck('participant_number')
+                             ->map(function ($number) {
+                                 // Parse: HGS/001/10/2025 -> ambil 001
+                                 $parts = explode('/', $number);
+                                 // Pastikan format minimal ada 4 bagian (HGS, Seq, Month, Year)
+                                 // dan bagian ke-2 adalah angka
+                                 if (count($parts) >= 4 && is_numeric($parts[1])) {
+                                     return intval($parts[1]);
+                                 }
+                                 return 0;
+                             })
+                             ->filter(fn($seq) => $seq > 0)
+                             ->toArray();
         
+        // Algoritma Gap Filling (Cari angka terkecil yang kosong)
         $sequence = 1;
-        if ($latestStudent) {
-            // Asumsi format: HGS/002/10/2025
-            $parts = explode('/', $latestStudent->participant_number);
-            if (count($parts) === 4) {
-                 $sequence = intval($parts[1]) + 1;
-            }
+        while (in_array($sequence, $existingSequences)) {
+            $sequence++;
         }
         
         return response()->json([

@@ -101,7 +101,7 @@
         </div>
 
         {{-- Tombol Tambah Siswa (Tetap) --}}
-        <button onclick="openModal('modalTambah')"
+        <button onclick="openStudentModal('modalTambah')"
                 class="px-5 py-2.5 bg-gold-500 text-white rounded-xl shadow-lg hover:bg-gold-600 transition-all font-semibold flex items-center">
             <i class="fa-solid fa-plus mr-2"></i> Siswa Baru
         </button>
@@ -483,19 +483,13 @@
     });
 
     // ================= MODAL FUNCTIONS =================
-    function openModal(id) {
-        const modal = document.getElementById(id);
-        if (!modal) return;
-        const content = modal.querySelector('.modal-content');
-
-        modal.classList.remove('hidden');
-
-        // Animation
-        if (content) {
-            setTimeout(() => {
-                content.classList.remove('scale-90', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
+    function openStudentModal(id) {
+        // Panggil fungsi global untuk buka modal & animasi
+        if(typeof openModal === 'function') {
+            openModal(id);
+        } else {
+            // Fallback jika global function belum load (jarang terjadi)
+            document.getElementById(id).classList.remove('hidden');
         }
 
         // FETCH NOMOR URUT (Khusus Modal Tambah)
