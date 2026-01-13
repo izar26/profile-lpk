@@ -181,7 +181,7 @@
 
     {{-- JUDUL DOKUMEN --}}
     <div class="document-title">BUKTI KELULUSAN ADMINISTRASI</div>
-    <div class="document-subtitle">Nomor Peserta: {{ sprintf('%04d', $student->id) }}/{{ date('Y') }}/LPK-HCM</div>
+    <div class="document-subtitle">Nomor Peserta: {{ $student->participant_number ?? '-' }}</div>
 
     {{-- ISI DATA PESERTA --}}
     <table class="content-table">

@@ -10,6 +10,13 @@
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Halo, {{ Auth::user()->name }}! 👋</h2>
             <p class="text-gray-500">Selamat datang di portal pendaftaran LPK Hachimitsu.</p>
+            @if(Auth::user()->student && Auth::user()->student->participant_number)
+                <div class="mt-2">
+                    <span class="bg-gold-50 text-gold-700 px-3 py-1 rounded-md text-xs font-bold border border-gold-100">
+                        No. Peserta: {{ Auth::user()->student->participant_number }}
+                    </span>
+                </div>
+            @endif
         </div>
         @if(Auth::user()->student && Auth::user()->student->foto)
             <img src="{{ asset('storage/' . Auth::user()->student->foto) }}" class="w-16 h-16 rounded-full object-cover border-2 border-gold-200">

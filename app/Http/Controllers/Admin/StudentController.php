@@ -50,11 +50,46 @@ class StudentController extends Controller
         return view('admin.students.index', compact('students', 'programs'));
     }
 
+    public function getNextNumber()
+    {
+        $now = now();
+        $month = $now->format('m');
+        $year = $now->format('Y');
+
+        // Cari nomor urut terakhir di bulan & tahun ini
+        $latestStudent = Student::whereYear('created_at', $year)
+                             ->whereMonth('created_at', $month)
+                             ->whereNotNull('participant_number')
+                             ->latest('id')
+                             ->first();
+        
+        $sequence = 1;
+        if ($latestStudent) {
+            // Asumsi format: HGS/002/10/2025
+            $parts = explode('/', $latestStudent->participant_number);
+            if (count($parts) === 4) {
+                 $sequence = intval($parts[1]) + 1;
+            }
+        }
+        
+        return response()->json([
+            'seq' => sprintf('%03d', $sequence),
+            'month' => $month,
+            'year' => $year
+        ]);
+    }
+
     /**
      * Simpan siswa baru & buat akun otomatis.
      */
     public function store(Request $request)
     {
+        // MERGE INPUT: Gabungkan HGS/ + Seq + / + Month + / + Year
+        if ($request->filled(['p_seq', 'p_month', 'p_year'])) {
+            $fullNumber = sprintf('HGS/%s/%s/%s', $request->p_seq, $request->p_month, $request->p_year);
+            $request->merge(['participant_number' => $fullNumber]);
+        }
+
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'nomor_ktp' => 'nullable|string|unique:students,nomor_ktp',
@@ -62,10 +97,14 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students,email|unique:users,email',
             'no_hp_peserta' => 'nullable|string|max:20',
             'status' => 'required',
+            // Validasi tetap ke participant_number (hasil merge)
+            'participant_number' => ['nullable', 'string', 'unique:students,participant_number', 'regex:/^HGS/'],
             'alamat_domisili' => 'nullable|string',
             'foto' => 'nullable|image|max:2048',
         ], [
-            'email.unique' => 'Email ini sudah terdaftar (sebagai siswa atau user lain).'
+            'email.unique' => 'Email ini sudah terdaftar (sebagai siswa atau user lain).',
+            'participant_number.regex' => 'Nomor Peserta wajib diawali dengan "HGS".',
+            'participant_number.unique' => 'Nomor Peserta ini sudah terpakai.',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -88,7 +127,7 @@ class StudentController extends Controller
             // 3. BUAT DATA SISWA
             $data = $request->only([
                 'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
-                'no_hp_peserta', 'status', 'alamat_domisili'
+                'no_hp_peserta', 'status', 'alamat_domisili', 'participant_number'
             ]);
 
             $data['user_id'] = $user->id;
@@ -116,12 +155,22 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        // MERGE INPUT: Gabungkan HGS/ + Seq + / + Month + / + Year
+        if ($request->filled(['p_seq', 'p_month', 'p_year'])) {
+            $fullNumber = sprintf('HGS/%s/%s/%s', $request->p_seq, $request->p_month, $request->p_year);
+            $request->merge(['participant_number' => $fullNumber]);
+        }
+        
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'nomor_ktp' => 'nullable|string|unique:students,nomor_ktp,' . $student->id,
             'email' => 'required|email|unique:students,email,' . $student->id,
             'program_pelatihan_id' => 'nullable|exists:program_pelatihans,id',
+            'participant_number' => ['nullable', 'string', 'regex:/^HGS/', 'unique:students,participant_number,' . $student->id],
             'foto' => 'nullable|image|max:2048',
+        ], [
+            'participant_number.regex' => 'Nomor Peserta wajib diawali dengan "HGS".',
+            'participant_number.unique' => 'Nomor Peserta ini sudah terpakai.',
         ]);
 
         DB::transaction(function () use ($request, $student) {
@@ -129,7 +178,7 @@ class StudentController extends Controller
             // Ambil field yang diizinkan update dari Modal Admin (Quick Edit)
             $data = $request->only([
                 'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
-                'no_hp_peserta', 'status', 'alamat_domisili'
+                'no_hp_peserta', 'status', 'alamat_domisili', 'participant_number'
             ]);
 
             // Update Foto

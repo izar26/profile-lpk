@@ -183,6 +183,11 @@
             <td><b>{{ strtoupper($student->nama_lengkap) }}</b></td>
         </tr>
         <tr>
+            <td class="label-col">No. Peserta</td>
+            <td class="sep-col">:</td>
+            <td><b>{{ $student->participant_number ?? '-' }}</b></td>
+        </tr>
+        <tr>
             <td class="label-col">TTL</td>
             <td class="sep-col">:</td>
             <td>{{ $student->tempat_lahir ?? '...' }}, {{ $student->tanggal_lahir ? \Carbon\Carbon::parse($student->tanggal_lahir)->translatedFormat('d F Y') : '...' }}</td>

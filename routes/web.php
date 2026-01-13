@@ -86,6 +86,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Students Management
     Route::controller(StudentController::class)->prefix('students')->name('students.')->group(function () {
+        // Helper
+        Route::get('/next-number', 'getNextNumber')->name('next-number');
+
         // Exports
         Route::get('/export-excel', 'exportExcel')->name('export-excel');
         Route::get('/export-pdf', 'exportPdf')->name('export-pdf');

@@ -176,6 +176,33 @@
                         <input type="text" name="nomor_ktp" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300" placeholder="16 Digit Angka">
                     </div>
                     <div>
+                        <label class="block text-sm mb-1 font-medium text-gray-700">No. Peserta (Wajib)</label>
+                        <div class="flex rounded-md shadow-sm border border-gray-300 overflow-hidden focus-within:ring-1 focus-within:ring-gold-500 focus-within:border-gold-500">
+                            <span class="inline-flex items-center px-3 bg-gray-100 text-gray-500 text-sm font-bold border-r border-gray-200">
+                                HGS
+                            </span>
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-r border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="tambah_p_seq" name="p_seq" 
+                                   class="w-14 block px-2 py-2 text-center text-sm border-0 focus:ring-0" 
+                                   placeholder="001">
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-x border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="tambah_p_month" name="p_month" 
+                                   class="w-12 block px-2 py-2 text-center text-sm border-0 focus:ring-0" 
+                                   placeholder="01">
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-x border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="tambah_p_year" name="p_year" 
+                                   class="w-16 block px-2 py-2 text-center text-sm border-0 focus:ring-0" 
+                                   placeholder="2026">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Otomatis terisi nomor urut & tanggal saat ini.</p>
+                    </div>
+                    <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Program Pelatihan</label>
                         <select name="program_pelatihan_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300 focus:ring-gold-300">
                             <option value="">-- Pilih Program --</option>
@@ -285,6 +312,29 @@
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP</label>
                         <input type="text" id="edit_nomor_ktp" name="nomor_ktp" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1 font-medium text-gray-700">No. Peserta</label>
+                        <div class="flex rounded-md shadow-sm border border-gray-300 overflow-hidden focus-within:ring-1 focus-within:ring-gold-500 focus-within:border-gold-500">
+                            <span class="inline-flex items-center px-3 bg-gray-100 text-gray-500 text-sm font-bold border-r border-gray-200">
+                                HGS
+                            </span>
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-r border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="edit_p_seq" name="p_seq" 
+                                   class="w-14 block px-2 py-2 text-center text-sm border-0 focus:ring-0">
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-x border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="edit_p_month" name="p_month" 
+                                   class="w-12 block px-2 py-2 text-center text-sm border-0 focus:ring-0">
+                            <span class="inline-flex items-center px-2 bg-gray-50 text-gray-400 text-sm font-bold border-x border-gray-200">
+                                /
+                            </span>
+                            <input type="text" id="edit_p_year" name="p_year" 
+                                   class="w-16 block px-2 py-2 text-center text-sm border-0 focus:ring-0">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm mb-1 font-medium text-gray-700">Program</label>
@@ -433,6 +483,35 @@
     });
 
     // ================= MODAL FUNCTIONS =================
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        const content = modal.querySelector('.modal-content');
+
+        modal.classList.remove('hidden');
+
+        // Animation
+        if (content) {
+            setTimeout(() => {
+                content.classList.remove('scale-90', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // FETCH NOMOR URUT (Khusus Modal Tambah)
+        if (id === 'modalTambah') {
+            fetch("{{ route('admin.students.next-number') }}")
+                .then(res => res.json())
+                .then(data => {
+                    // Update 3 input terpisah
+                    if(data.seq) document.getElementById('tambah_p_seq').value = data.seq;
+                    if(data.month) document.getElementById('tambah_p_month').value = data.month;
+                    if(data.year) document.getElementById('tambah_p_year').value = data.year;
+                })
+                .catch(err => console.error("Gagal ambil no peserta:", err));
+        }
+    }
+
     function loadEditStudent(id) {
         openModal('modalEdit');
         document.getElementById('edit-loading').classList.remove('hidden');
@@ -445,6 +524,24 @@
                 // Pastikan key object data.nama_field sesuai dengan response controller
                 document.getElementById('edit_nama_lengkap').value = data.nama_lengkap; // Update ke nama_lengkap
                 document.getElementById('edit_nomor_ktp').value = data.nomor_ktp;
+                
+                // PARSE NO PESERTA (Split HGS/Seq/Month/Year)
+                let pNum = data.participant_number || '';
+                if (pNum.startsWith('HGS/')) {
+                    // Contoh: HGS/001/01/2026 -> ["HGS", "001", "01", "2026"]
+                    let parts = pNum.split('/');
+                    if(parts.length === 4) {
+                        document.getElementById('edit_p_seq').value = parts[1];
+                        document.getElementById('edit_p_month').value = parts[2];
+                        document.getElementById('edit_p_year').value = parts[3];
+                    }
+                } else {
+                    // Fallback jika format beda/kosong
+                    document.getElementById('edit_p_seq').value = '';
+                    document.getElementById('edit_p_month').value = '';
+                    document.getElementById('edit_p_year').value = '';
+                }
+
                 document.getElementById('edit_program').value = data.program_pelatihan_id;
                 document.getElementById('edit_status').value = data.status;
                 document.getElementById('edit_email').value = data.email;

@@ -32,6 +32,9 @@
                     <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-md text-sm border border-gray-200">
                         No. KTP: {{ $student->nomor_ktp ?? '-' }}
                     </span>
+                    <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-md text-sm border border-indigo-100 font-mono">
+                        ID: {{ $student->participant_number ?? '-' }}
+                    </span>
                     @if($student->pernah_bekerja)
                         <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-md text-sm border border-purple-100 font-semibold">
                             Berpengalaman Kerja

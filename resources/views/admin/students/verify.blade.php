@@ -42,6 +42,9 @@
                 {{-- Baris 1: Nama & Program --}}
                 <div class="col-span-2 md:col-span-1"><span class="text-gray-500 block text-xs">Nama Lengkap</span> <span class="font-bold text-lg text-gray-800">{{ $student->nama_lengkap }}</span></div>
                 <div class="col-span-2 md:col-span-1"><span class="text-gray-500 block text-xs">Program Pelatihan</span> <span class="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ $student->program->judul ?? 'Belum Memilih' }}</span></div>
+                
+                {{-- Baris: No Peserta --}}
+                <div class="col-span-2"><span class="text-gray-500 block text-xs">Nomor Peserta</span> <span class="font-bold text-gray-900 font-mono bg-gray-100 px-2 py-0.5 rounded">{{ $student->participant_number ?? '-' }}</span></div>
 
                 {{-- Baris 2: Identitas Kependudukan --}}
                 <div><span class="text-gray-500 block text-xs">Nomor KTP</span> <span class="font-medium">{{ $student->nomor_ktp ?? '-' }}</span></div>

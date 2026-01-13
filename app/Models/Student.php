@@ -68,6 +68,11 @@ class Student extends Model
     protected static function booted()
     {
         static::creating(function ($student) {
+            // Jika nomor peserta sudah diisi (custom), jangan generate otomatis
+            if (!empty($student->participant_number)) {
+                return;
+            }
+
             $now = now();
             $month = $now->format('m');
             $year = $now->format('Y');

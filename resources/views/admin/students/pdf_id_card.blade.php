@@ -209,7 +209,7 @@
                     </div>
                     
                     {{-- ID / Nomor Induk --}}
-                    <div class="nomor-induk">ID: {{ $student->nomor_ktp }}</div>
+                    <div class="nomor-induk">{{ $student->participant_number ?? $student->nomor_ktp }}</div>
                 </div>
 
                 {{-- QR CODE --}}

@@ -100,11 +100,12 @@
         /* UTILITY CLASS KHUSUS KOLOM */
         /* Total 100% */
         .col-no { width: 4%; text-align: center; }
-        .col-nama { width: 22%; }
-        .col-ktp { width: 14%; white-space: nowrap; } /* KTP Dilarang Turun Baris */
-        .col-prog { width: 20%; }
+        .col-id { width: 14%; text-align: center; font-size: 8pt; }
+        .col-nama { width: 20%; }
+        .col-ktp { width: 12%; white-space: nowrap; font-size: 8pt; }
+        .col-prog { width: 16%; }
         .col-sts { width: 8%; text-align: center; white-space: nowrap;}
-        .col-kontak { width: 32%; font-size: 8pt; } /* Kontak huruf lebih kecil dikit */
+        .col-kontak { width: 26%; font-size: 8pt; }
 
         .badge {
             background: #fff; border: 1px solid #333;
@@ -158,6 +159,7 @@
         <thead>
             <tr>
                 <th class="col-no">No</th>
+                <th class="col-id">No. Peserta</th>
                 <th class="col-nama">Nama Lengkap</th>
                 <th class="col-ktp">No. KTP</th>
                 <th class="col-prog">Program</th>
@@ -169,6 +171,7 @@
             @forelse($students as $index => $student)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
+                <td class="text-center font-bold">{{ $student->participant_number ?? '-' }}</td>
                 <td class="text-bold text-upper">
                     {{ $student->nama_lengkap }}
                 </td>
