@@ -140,6 +140,7 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
 
         // Keluarga
         Route::post('/family', 'storeFamily')->name('family.store');
+        Route::put('/family/{id}', 'updateFamily')->name('family.update');
         Route::delete('/family/{id}', 'destroyFamily')->name('family.destroy');
     });
 });

@@ -172,6 +172,30 @@ class PegawaiAreaController extends Controller
         return back()->with('success', 'Data keluarga ditambahkan.');
     }
 
+    public function updateFamily(Request $request, $id)
+    {
+        $request->validate([
+            'nama_lengkap' => 'required|string',
+            'hubungan' => 'required|string',
+        ]);
+
+        $family = EmployeeFamily::where('id', $id)
+                    ->where('employee_id', Auth::user()->employee->id)
+                    ->firstOrFail();
+
+        $family->update([
+            'nama_lengkap' => $request->nama_lengkap,
+            'hubungan' => $request->hubungan,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'pekerjaan' => $request->pekerjaan,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        return back()->with('success', 'Data keluarga diperbarui.');
+    }
+
     public function destroyFamily($id)
     {
         $fam = EmployeeFamily::where('id', $id)->where('employee_id', Auth::user()->employee->id)->firstOrFail();

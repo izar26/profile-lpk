@@ -310,10 +310,16 @@
                                 <td class="px-4 py-3 font-semibold">{{ $fam->hubungan }}</td>
                                 <td class="px-4 py-3">{{ $fam->nama_lengkap }}</td>
                                 <td class="px-4 py-3">{{ $fam->pekerjaan ?? '-' }}</td>
-                                <td class="px-4 py-3 text-right">
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <button type="button" onclick='openDetailKeluarga(@json($fam))' class="text-blue-500 hover:text-blue-700 mr-3" title="Detail">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button type="button" onclick='openEditKeluarga(@json($fam))' class="text-yellow-500 hover:text-yellow-700 mr-3" title="Edit">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
                                     <form action="{{ route('pegawai.family.destroy', $fam->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus data keluarga ini?')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -470,9 +476,129 @@
     </div>
 </div>
 
+        </form>
+    </div>
+</div>
+
+{{-- MODAL DETAIL KELUARGA --}}
+<div id="modalDetailKeluarga" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold mb-4 border-b pb-2">Detail Data Keluarga</h3>
+        <div class="space-y-3 text-sm">
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">Hubungan</div>
+                <div class="col-span-2 font-bold" id="detail_hubungan"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">Nama Lengkap</div>
+                <div class="col-span-2 font-bold" id="detail_nama"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">NIK</div>
+                <div class="col-span-2" id="detail_nik"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">TTL</div>
+                <div class="col-span-2" id="detail_ttl"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">Pekerjaan</div>
+                <div class="col-span-2" id="detail_pekerjaan"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="text-gray-500">No. HP</div>
+                <div class="col-span-2" id="detail_nohp"></div>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button type="button" onclick="closeModal('modalDetailKeluarga')" class="px-4 py-2 bg-gray-200 rounded-lg text-sm font-bold hover:bg-gray-300 transition">Tutup</button>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL EDIT KELUARGA --}}
+<div id="modalEditKeluarga" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold mb-4">Edit Data Keluarga</h3>
+        <form id="formEditKeluarga" method="POST">
+            @csrf @method('PUT')
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Hubungan</label>
+                    <select name="hubungan" id="edit_hubungan" class="w-full border-gray-300 rounded-lg" required>
+                        @foreach(['Suami','Istri','Anak','Ayah','Ibu','Saudara'] as $h) <option value="{{ $h }}">{{ $h }}</option> @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
+                    <input type="text" name="nama_lengkap" id="edit_nama" class="w-full border-gray-300 rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">NIK (Opsional)</label>
+                    <input type="text" name="nik" id="edit_nik" maxlength="16" class="w-full border-gray-300 rounded-lg">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tempat Lahir</label>
+                        <input type="text" name="tempat_lahir" id="edit_tempat_lahir" class="w-full border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tgl Lahir</label>
+                        <input type="date" name="tanggal_lahir" id="edit_tanggal_lahir" class="w-full border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Pekerjaan</label>
+                    <input type="text" name="pekerjaan" id="edit_pekerjaan" class="w-full border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">No. HP (Opsional)</label>
+                    <input type="text" name="no_hp" id="edit_no_hp" class="w-full border-gray-300 rounded-lg">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('modalEditKeluarga')" class="px-4 py-2 bg-gray-200 rounded-lg text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-gold-500 hover:bg-gold-600 text-white rounded-lg text-sm font-bold">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function openDetailKeluarga(data) {
+        document.getElementById('detail_hubungan').innerText = data.hubungan;
+        document.getElementById('detail_nama').innerText = data.nama_lengkap;
+        document.getElementById('detail_nik').innerText = data.nik || '-';
+        
+        let ttl = (data.tempat_lahir || '') + (data.tempat_lahir && data.tanggal_lahir ? ', ' : '') + (data.tanggal_lahir || '');
+        document.getElementById('detail_ttl').innerText = ttl || '-';
+        
+        document.getElementById('detail_pekerjaan').innerText = data.pekerjaan || '-';
+        document.getElementById('detail_nohp').innerText = data.no_hp || '-';
+        
+        openModal('modalDetailKeluarga');
+    }
+
+    function openEditKeluarga(data) {
+        // Set Action URL
+        let url = "{{ route('pegawai.family.update', ':id') }}";
+        url = url.replace(':id', data.id);
+        document.getElementById('formEditKeluarga').action = url;
+
+        // Fill Data
+        document.getElementById('edit_hubungan').value = data.hubungan;
+        document.getElementById('edit_nama').value = data.nama_lengkap;
+        document.getElementById('edit_nik').value = data.nik || '';
+        document.getElementById('edit_tempat_lahir').value = data.tempat_lahir || '';
+        document.getElementById('edit_tanggal_lahir').value = data.tanggal_lahir ? data.tanggal_lahir.split('T')[0] : ''; // Handle datetime format if any
+        document.getElementById('edit_pekerjaan').value = data.pekerjaan || '';
+        document.getElementById('edit_no_hp').value = data.no_hp || '';
+
+        openModal('modalEditKeluarga');
+    }
 </script>
 
 @endsection
