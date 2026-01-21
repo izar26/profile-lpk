@@ -43,6 +43,50 @@
             scroll-behavior: smooth; 
             scroll-padding-top: 80px; /* Jarak agar tidak ketutup navbar */
         }
+
+        /* HIDE GOOGLE TRANSLATE DEFAULT UI - AGGRESSIVE */
+        .goog-te-banner-frame.skiptranslate, 
+        .goog-te-banner-frame, 
+        iframe[name="google_translate_frame"],
+        iframe.goog-te-banner-frame {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important; 
+        } 
+        
+        body {
+            top: 0px !important; 
+            position: static !important; 
+        }
+        
+        /* Hide the wrapper that Google adds */
+        .skiptranslate {
+            display: none !important;
+        }
+        
+        /* Exception: Don't hide the body content if Google wraps it (rare but possible) */
+        body > .skiptranslate {
+            display: none !important;
+        }
+
+        #google_translate_element {
+            display: none !important;
+        }
+        
+        .goog-tooltip {
+            display: none !important;
+        }
+        .goog-text-highlight {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+        
+        /* Fix Text Size Issue caused by Google Translate */
+        font {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
         
         /* Pattern Background */
         .hero-pattern {
@@ -95,6 +139,22 @@
             @if(isset($keberangkatans) && $keberangkatans->count() > 0)
                 <a href="#keberangkatan" class="hover:text-gold-600 transition">Keberangkatan</a>
             @endif
+
+            <!-- LANGUAGE SWITCHER DESKTOP (CAPSULE STYLE) -->
+            <div class="ml-6 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full p-1 flex items-center relative">
+                
+                <button onclick="changeLanguage('id')" id="btn-id" class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 focus:outline-none group">
+                    <img src="https://flagcdn.com/w20/id.png" alt="ID" class="w-4 h-auto rounded-[2px] shadow-sm">
+                    <span class="text-xs font-bold tracking-wide">ID</span>
+                </button>
+
+                <div class="w-px h-4 bg-gray-300 mx-1"></div>
+
+                <button onclick="changeLanguage('ja')" id="btn-ja" class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 focus:outline-none group">
+                    <img src="https://flagcdn.com/w20/jp.png" alt="JP" class="w-4 h-auto rounded-[2px] shadow-sm">
+                    <span class="text-xs font-bold tracking-wide">JP</span>
+                </button>
+            </div>
             
             @auth
                 <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full shadow-lg hover:bg-gold-600 transition transform hover:-translate-y-0.5">Dashboard</a>
@@ -102,6 +162,9 @@
                 <a href="{{ route('login') }}" class="px-5 py-2 border border-gold-500 text-gold-600 rounded-full hover:bg-gold-500 hover:text-white transition">Masuk</a>
             @endauth
         </div>
+        
+        <!-- HIDDEN GOOGLE TRANSLATE ELEMENT -->
+        <div id="google_translate_element"></div>
 
         <button @click="mobileMenu = !mobileMenu" class="md:hidden text-gray-700 text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
     </div>
@@ -122,6 +185,22 @@
             @if(isset($keberangkatans) && $keberangkatans->count() > 0)
                 <a href="#keberangkatan" @click="mobileMenu = false">Keberangkatan</a>
             @endif
+
+            <!-- LANGUAGE SWITCHER MOBILE -->
+            <div class="flex items-center justify-center gap-6 py-4 border-t border-gray-100 mt-2">
+                <button onclick="changeLanguage('id')" class="flex flex-col items-center gap-1 group opacity-80 hover:opacity-100">
+                    <div class="p-1 border-2 border-transparent group-hover:border-gold-500 rounded-full transition">
+                        <img src="https://flagcdn.com/w40/id.png" alt="ID" class="h-8 w-auto rounded shadow-sm">
+                    </div>
+                    <span class="text-xs text-gray-500 font-bold group-hover:text-gold-600">Indonesia</span>
+                </button>
+                <button onclick="changeLanguage('ja')" class="flex flex-col items-center gap-1 group opacity-80 hover:opacity-100">
+                    <div class="p-1 border-2 border-transparent group-hover:border-gold-500 rounded-full transition">
+                        <img src="https://flagcdn.com/w40/jp.png" alt="JP" class="h-8 w-auto rounded shadow-sm">
+                    </div>
+                    <span class="text-xs text-gray-500 font-bold group-hover:text-gold-600">日本語</span>
+                </button>
+            </div>
 
             @auth
                 <a href="{{ url('/dashboard') }}" class="px-5 py-2 bg-gold-500 text-white rounded-full font-bold">Dashboard</a>
@@ -837,5 +916,88 @@
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- GOOGLE TRANSLATE SCRIPT -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'id', 
+                includedLanguages: 'id,ja', 
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE, 
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script type="text/javascript">
+        // Fungsi Custom untuk Trigger Google Translate
+        function changeLanguage(lang) {
+            var selectField = document.querySelector("select.goog-te-combo");
+            if (selectField) {
+                selectField.value = lang;
+                selectField.dispatchEvent(new Event("change"));
+            } else {
+                // Fallback jika elemen belum ready (biasanya mobile atau load lambat)
+                // Kita set cookie manual google
+                // Format Cookie: googtrans=/auto/ja
+                
+                // Hapus cookie lama dulu biar bersih
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname;
+                
+                // Set Cookie Baru
+                var targetLang = lang === 'id' ? '/id/id' : '/id/ja'; // Source/Target
+                document.cookie = "googtrans=" + targetLang + "; path=/";
+                document.cookie = "googtrans=" + targetLang + "; path=/; domain=" + window.location.hostname;
+                
+                window.location.reload();
+            }
+            
+            // Visual Feedback (Opsional)
+            updateActiveButton(lang);
+        }
+
+        function updateActiveButton(lang) {
+            const activeClasses = ['bg-white', 'shadow-md', 'text-gray-900', 'scale-105'];
+            const inactiveClasses = ['text-gray-400', 'hover:bg-gray-200', 'hover:text-gray-600'];
+
+            ['btn-id', 'btn-ja'].forEach(id => {
+                var el = document.getElementById(id);
+                if(el) {
+                    // Reset all
+                    el.classList.remove(...activeClasses);
+                    el.classList.remove(...inactiveClasses);
+                }
+            });
+            
+            // Set Active
+            var activeBtn = document.getElementById('btn-' + lang);
+            var inactiveBtn = document.getElementById('btn-' + (lang === 'id' ? 'ja' : 'id'));
+
+            if(activeBtn) {
+                activeBtn.classList.add(...activeClasses);
+            }
+            if(inactiveBtn) {
+                inactiveBtn.classList.add(...inactiveClasses);
+            }
+        }
+
+        // Cek bahasa saat ini saat load untuk highlight tombol
+        window.addEventListener('load', function() {
+            var cookies = document.cookie.split(';');
+            var currentLang = 'id'; // Default
+            
+            for(var i=0; i < cookies.length; i++) {
+                var c = cookies[i].trim();
+                if (c.indexOf('googtrans=') == 0) {
+                    var val = c.substring('googtrans='.length, c.length);
+                    // val biasanya "/id/ja" atau "/auto/ja"
+                    if (val.includes('/ja')) currentLang = 'ja';
+                }
+            }
+            updateActiveButton(currentLang);
+        });
+    </script>
 </body>
 </html>
