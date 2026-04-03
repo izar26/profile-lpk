@@ -73,7 +73,7 @@ class SiswaAreaController extends Controller
         if (!$student) return back()->with('error', 'Data siswa tidak ditemukan.');
 
         // Cek Status Lock
-        if (!in_array($student->status, ['Mendaftar', 'Perlu Revisi'])) {
+        if (in_array($student->status, ['Menunggu Verifikasi', 'Ditolak'])) {
             return back()->with('error', 'Formulir terkunci. Status: ' . $student->status);
         }
 
@@ -208,7 +208,10 @@ class SiswaAreaController extends Controller
                 }
             }
 
-            $student->update(['status' => 'Menunggu Verifikasi']);
+            // Hanya ubah status ke 'Menunggu Verifikasi' jika masih tahap pendaftaran awal
+            if (in_array($student->status, ['Mendaftar', 'Perlu Revisi'])) {
+                $student->update(['status' => 'Menunggu Verifikasi']);
+            }
             DB::commit();
 
             return back()->with('success', 'Formulir berhasil dikirim! Tanda tangan dan dokumen telah tersimpan.');
