@@ -179,6 +179,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <x-form-input label="Nomor KTP (16 Digit)" name="nomor_ktp" :value="$student->nomor_ktp"
                             required="true" maxlength="16" />
+                        <x-form-input label="Nomor KK (16 Digit)" name="nomor_kk" :value="$student->nomor_kk"
+                            required="true" maxlength="16" />
                         <x-form-input label="Email Aktif" name="email" :value="$student->email" type="email"
                             required="true" />
                         <x-form-input label="No. HP Peserta (WhatsApp)" name="no_hp_peserta"

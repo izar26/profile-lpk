@@ -85,6 +85,7 @@ class SiswaAreaController extends Controller
             'tanggal_lahir'        => 'required|date',
             'jenis_kelamin'        => 'required|in:Laki-laki,Perempuan',
             'nomor_ktp'            => 'required|numeric|digits:16',
+            'nomor_kk'             => 'required|numeric|digits:16',
             'email'                => 'required|email',
             'no_hp_peserta'        => 'required|numeric',
             'kota_pembuatan'       => 'required|string',
@@ -132,7 +133,7 @@ class SiswaAreaController extends Controller
             $data = $request->only([
                 'program_pelatihan_id', 'nama_lengkap', 'tempat_lahir', 'tanggal_lahir',
                 'jenis_kelamin', 'tinggi_badan', 'berat_badan', 'golongan_darah',
-                'agama', 'status_pernikahan', 'nomor_ktp', 'nomor_paspor', 'nomor_npwp',
+                'agama', 'status_pernikahan', 'nomor_ktp', 'nomor_kk', 'nomor_paspor', 'nomor_npwp',
                 'email', 'no_hp_peserta', 'no_hp_ortu', 'alamat_domisili', 'alamat_ktp',
                 'kota_ktp', 'provinsi_ktp', 'kota_pembuatan'
             ]);
