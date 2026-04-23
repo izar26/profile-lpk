@@ -157,7 +157,12 @@ class StudentController extends Controller
      */
     public function edit(Student $student)
     {
-        return response()->json($student);
+        $student->load(['program', 'educations', 'families', 'experiences', 'documents']);
+        $programs = ProgramPelatihan::all();
+        $documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')->get();
+        $uploadedDocuments = $student->documents->pluck('file_path', 'document_type_id')->toArray();
+
+        return view('admin.students.edit', compact('student', 'programs', 'documentTypes', 'uploadedDocuments'));
     }
 
     /**
@@ -165,6 +170,17 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        // 1. QUICK UPDATE STATUS (Dari show.blade.php)
+        if (!$request->has('is_full_edit')) {
+            $request->validate([
+                'status' => 'required|string',
+            ]);
+
+            $student->update(['status' => $request->status]);
+            return redirect()->back()->with('success', 'Status siswa berhasil diperbarui.');
+        }
+
+        // 2. FULL EDIT (Dari edit.blade.php)
         // MERGE INPUT: Gabungkan HGS/ + Seq + / + Month + / + Year
         if ($request->filled(['p_seq', 'p_month', 'p_year'])) {
             $fullNumber = sprintf('HGS/%s/%s/%s', $request->p_seq, $request->p_month, $request->p_year);
@@ -178,6 +194,8 @@ class StudentController extends Controller
             'program_pelatihan_id' => 'nullable|exists:program_pelatihans,id',
             'participant_number' => ['nullable', 'string', 'regex:/^HGS/', 'unique:students,participant_number,' . $student->id],
             'foto' => 'nullable|image|max:2048',
+            'signature_base64' => 'nullable|string',
+            'documents.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'participant_number.regex' => 'Nomor Peserta wajib diawali dengan "HGS".',
             'participant_number.unique' => 'Nomor Peserta ini sudah terpakai.',
@@ -185,42 +203,99 @@ class StudentController extends Controller
 
         DB::transaction(function () use ($request, $student) {
 
-            // Ambil field yang diizinkan update dari Modal Admin (Quick Edit)
+            // A. Data Diri
             $data = $request->only([
                 'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
-                'no_hp_peserta', 'status', 'alamat_domisili', 'participant_number'
+                'no_hp_peserta', 'status', 'alamat_domisili', 'participant_number',
+                'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'tinggi_badan', 
+                'berat_badan', 'golongan_darah', 'agama', 'status_pernikahan', 
+                'nomor_paspor', 'nomor_npwp', 'no_hp_ortu', 'alamat_ktp',
+                'kota_ktp', 'provinsi_ktp', 'kota_pembuatan'
             ]);
-
-            // Update Foto
+            $data['pernah_bekerja'] = $request->has('pernah_bekerja');
+            
+            // B. Foto
             if ($request->hasFile('foto')) {
-                if ($student->foto) Storage::disk('public')->delete($student->foto);
-
+                if ($student->foto && Storage::disk('public')->exists($student->foto)) {
+                    Storage::disk('public')->delete($student->foto);
+                }
                 $path = $request->file('foto')->store('foto_siswa', 'public');
                 $data['foto'] = $path;
 
-                // [SINKRONISASI FOTO KE USER]
+                // Sinkronisasi ke user
                 if ($student->user) {
-                    if ($student->user->foto && $student->user->foto != $student->foto) {
-                         if(Storage::disk('public')->exists($student->user->foto)) {
-                            Storage::disk('public')->delete($student->user->foto);
-                         }
+                    if ($student->user->foto && $student->user->foto != $student->foto && Storage::disk('public')->exists($student->user->foto)) {
+                        Storage::disk('public')->delete($student->user->foto);
                     }
                     $student->user->update(['foto' => $path]);
                 }
             }
 
+            // C. Tanda Tangan
+            if ($request->filled('signature_base64')) {
+                if ($student->signature && Storage::disk('public')->exists($student->signature)) {
+                    Storage::disk('public')->delete($student->signature);
+                }
+                $image_parts = explode(";base64,", $request->signature_base64);
+                if (count($image_parts) == 2) {
+                    $image_base64 = base64_decode($image_parts[1]);
+                    $fileName = 'signatures/sign_' . $student->id . '_' . time() . '.png';
+                    Storage::disk('public')->put($fileName, $image_base64);
+                    $data['signature'] = $fileName;
+                }
+            }
+
             $student->update($data);
 
-            // [SINKRONISASI NAMA & EMAIL KE USER]
+            // Sinkronisasi user
             if ($student->user) {
                 $student->user->update([
-                    'name' => $request->nama_lengkap, // Sync nama_lengkap
+                    'name' => $request->nama_lengkap,
                     'email' => $request->email,
                 ]);
             }
+
+            // D. Pendidikan
+            $student->educations()->delete();
+            if ($request->has('pendidikan')) {
+                foreach ($request->pendidikan as $edu) {
+                    if (!empty($edu['nama_institusi'])) $student->educations()->create($edu);
+                }
+            }
+
+            // E. Keluarga
+            $student->families()->delete();
+            if ($request->has('keluarga')) {
+                foreach ($request->keluarga as $fam) {
+                    if (!empty($fam['nama'])) $student->families()->create($fam);
+                }
+            }
+
+            // F. Pengalaman
+            $student->experiences()->delete();
+            if ($data['pernah_bekerja'] && $request->has('pengalaman')) {
+                foreach ($request->pengalaman as $exp) {
+                    if (!empty($exp['nama_instansi'])) $student->experiences()->create($exp);
+                }
+            }
+
+            // G. Dokumen
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $typeId => $file) {
+                    $oldDoc = $student->documents()->where('document_type_id', $typeId)->first();
+                    if ($oldDoc && Storage::disk('public')->exists($oldDoc->file_path)) {
+                        Storage::disk('public')->delete($oldDoc->file_path);
+                    }
+                    $pathDoc = $file->store('dokumen_siswa', 'public');
+                    \App\Models\StudentDocument::updateOrCreate(
+                        ['student_id' => $student->id, 'document_type_id' => $typeId],
+                        ['file_path' => $pathDoc]
+                    );
+                }
+            }
         });
 
-        return redirect()->back()->with('success', 'Data siswa & akun berhasil diperbarui.');
+        return redirect()->route('admin.students.show', $student)->with('success', 'Data siswa berhasil diperbarui secara penuh.');
     }
 
     /**

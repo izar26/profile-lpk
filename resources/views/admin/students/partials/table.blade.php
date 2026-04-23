@@ -207,12 +207,11 @@
                     <div class="border-t border-gray-100 my-1"></div>
 
                     <li>
-                        {{-- Tambahkan open = false agar menu menutup saat diklik --}}
-                        <button onclick="loadEditStudent({{ $student->id }});" @click="open = false"
+                        <a href="{{ route('admin.students.edit', $student) }}" @click="open = false"
                            class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
                             <i class="fa-solid fa-pen mr-2 w-5 text-center text-indigo-600"></i>
                             Edit
-                        </button>
+                        </a>
                     </li>
 
                     <li>
