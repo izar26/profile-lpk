@@ -653,15 +653,6 @@
                                 dipertanggungjawabkan.
                             </p>
                         </div>
-
-                    @if($isEditable)
-                        <div class="mt-12 bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                            <p class="text-sm text-yellow-800">
-                                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                                Dengan menekan tombol simpan, saya menyatakan data yang saya isi adalah benar dan dapat
-                                dipertanggungjawabkan.
-                            </p>
-                        </div>
                     @endif
                 </div>
 
