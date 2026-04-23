@@ -22,54 +22,22 @@
     @endphp
 
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 0;
-        }
-
+        @page { size: A4 portrait; margin: 0; }
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10pt;
-            line-height: 1.4;
-            
-            /* PADDING KHUSUS KOP & MARGIN HALAMAN */
-            padding-top: 4.5cm;
-            padding-left: 2cm;
-            padding-right: 2cm;
-            padding-bottom: 2cm;
-
+            font-size: 10pt; line-height: 1.5; color: #333;
+            padding: 4.5cm 1.5cm 2cm 1.5cm;
             @if($bgImage)
-                background-image: url("{{ $bgImage }}");
-                background-repeat: no-repeat;
-                background-position: center center;
-                background-size: 100% 100%;
+                background-image: url("{{ $bgImage }}"); background-repeat: no-repeat;
+                background-position: center center; background-size: 100% 100%;
             @endif
         }
-
-        /* KOP SURAT */
-        .kop-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4.5cm;
-            z-index: -1;
-        }
-        .img-kop {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* HEADER MANUAL (FALLBACK) */
-        .header-manual {
-            position: absolute;
-            top: 0.5cm;
-            left: 1cm;
-            right: 1cm;
-            height: 3.5cm;
-            border-bottom: 3px double #000;
-        }
+        /* Kop */
+        .kop-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 4.5cm; z-index: -1; }
+        .img-kop { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Fallback Header */
+        .header-manual { position: absolute; top: 0.5cm; left: 1cm; right: 1cm; height: 3.5cm; border-bottom: 3px double #000; }
         .header-table { width: 100%; height: 100%; }
         .header-table td { vertical-align: middle; }
         .text-center { text-align: center; }
@@ -77,58 +45,56 @@
         .sk-lpk { font-size: 11px; font-weight: bold; margin: 2px 0; }
         .alamat-lpk { font-size: 10px; margin: 0; }
 
-        /* JUDUL DOKUMEN */
-        .document-title {
-            text-align: center;
-            font-size: 14pt;
+        /* Titles */
+        .doc-title { text-align: center; font-size: 16pt; font-weight: bold; text-decoration: underline; margin-bottom: 5px; text-transform: uppercase; color: #111; }
+        .doc-subtitle { text-align: center; font-size: 11pt; color: #555; margin-bottom: 30px; }
+        
+        /* Section Title */
+        .section-title {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 5px 10px;
             font-weight: bold;
-            text-decoration: underline;
-            margin-bottom: 5px;
+            font-size: 11pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #e74c3c;
             text-transform: uppercase;
         }
-        .document-subtitle {
-            text-align: center;
-            font-size: 10pt;
-            color: #555;
-            margin-bottom: 20px;
-        }
 
-        /* Layout Foto */
-        .photo-container {
-            float: right; width: 3cm; height: 4cm;
-            border: 1px solid #ccc; margin-left: 15px; margin-bottom: 10px;
-            overflow: hidden;
-            background-color: #eee;
+        /* Top Layout (Photo & Main Info) */
+        .top-container { width: 100%; margin-bottom: 15px; }
+        .photo-cell { width: 3.5cm; vertical-align: top; text-align: center; }
+        .photo-box {
+            width: 3cm; height: 4cm; border: 2px solid #bdc3c7; background-color: #ecf0f1;
+            display: inline-block; overflow: hidden;
         }
-        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .main-info-cell { vertical-align: top; padding-left: 15px; }
+        
+        /* Data Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table td { padding: 3px 5px; vertical-align: top; }
+        .label-col { width: 130px; font-weight: bold; color: #555; }
+        .colon-col { width: 10px; font-weight: bold; color: #555; }
+        .val-col { color: #111; }
 
-        /* Data Baris */
-        .row { margin-bottom: 4px; clear: both; }
-        .label { float: left; width: 140px; font-weight: bold; }
-        .colon { float: left; width: 15px; }
-        .value { float: left; width: 360px; }
+        /* List Table */
+        .list-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9.5pt; }
+        .list-table th, .list-table td { border: 1px solid #bdc3c7; padding: 6px; }
+        .list-table th { background-color: #ecf0f1; color: #2c3e50; font-weight: bold; text-align: center; text-transform: uppercase; }
+        .list-table tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Signature */
+        .signature-box { float: right; width: 250px; text-align: center; margin-top: 40px; }
+        .signature-name { font-weight: bold; text-decoration: underline; margin-top: 60px; text-transform: uppercase; }
         .clear { clear: both; }
-
-        /* Section Header */
-        .section-title {
-            font-weight: bold; font-size: 11pt; background-color: rgba(238, 238, 238, 0.8);
-            padding: 5px; margin-top: 15px; margin-bottom: 8px;
-            border-bottom: 1px solid #999;
-        }
-
-        /* Tabel Data (Pendidikan/Keluarga) */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9pt; background-color: rgba(255, 255, 255, 0.8); }
-        table th, table td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
-        table th { background-color: rgba(245, 245, 245, 0.9); text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    {{-- KOP SURAT --}}
+    {{-- KOP --}}
     @if($kopImage)
-        <div class="kop-wrapper">
-            <img src="{{ $kopImage }}" class="img-kop">
-        </div>
+        <div class="kop-wrapper"><img src="{{ $kopImage }}" class="img-kop"></div>
     @else
         <div class="header-manual">
             <table class="header-table">
@@ -152,83 +118,84 @@
     @endif
 
     {{-- JUDUL --}}
-    <div class="document-title">Biodata Peserta Pelatihan</div>
-    <div class="document-subtitle">Nomor Peserta: {{ $student->participant_number ?? '-' }}</div>
+    <div class="doc-title">Biodata Peserta Pelatihan</div>
+    <div class="doc-subtitle">Nomor Pendaftaran: {{ $student->participant_number ?? '-' }}</div>
 
-    {{-- FOTO --}}
-    <div class="photo-container">
-        @if($studentFoto)
-            <img src="{{ $studentFoto }}">
-        @else
-            <div style="text-align: center; padding-top: 50px; color: #aaa; font-size: 8pt;">No Photo</div>
-        @endif
-    </div>
-
-    {{-- DATA UTAMA --}}
-    <div class="row"><div class="label">Nama Lengkap</div><div class="colon">:</div><div class="value" style="font-weight: bold; text-transform: uppercase;">{{ $student->nama_lengkap }}</div></div>
-    <div class="row"><div class="label">Program Pilihan</div><div class="colon">:</div><div class="value">{{ $student->program->judul ?? '-' }}</div></div>
-    <div class="row"><div class="label">Email</div><div class="colon">:</div><div class="value">{{ $student->email }}</div></div>
-    <div class="row"><div class="label">No. HP (WA)</div><div class="colon">:</div><div class="value">{{ $student->no_hp_peserta ?? '-' }}</div></div>
-    <div class="row"><div class="label">Status Peserta</div><div class="colon">:</div><div class="value">{{ $student->status }}</div></div>
-
-    <div class="clear"></div>
+    {{-- BAGIAN ATAS: FOTO & DATA UTAMA --}}
+    <table class="top-container">
+        <tr>
+            <td class="photo-cell">
+                <div class="photo-box">
+                    @if($studentFoto)
+                        <img src="{{ $studentFoto }}">
+                    @else
+                        <div style="padding-top: 60px; color: #95a5a6; font-size: 8pt;">FOTO 3x4</div>
+                    @endif
+                </div>
+            </td>
+            <td class="main-info-cell">
+                <table class="data-table">
+                    <tr><td class="label-col" style="width:110px;">Nama Lengkap</td><td class="colon-col">:</td><td class="val-col" style="font-weight: bold; text-transform: uppercase; font-size: 12pt;">{{ $student->nama_lengkap }}</td></tr>
+                    <tr><td class="label-col">Program Pilihan</td><td class="colon-col">:</td><td class="val-col" style="font-weight: bold;">{{ $student->program->judul ?? '-' }}</td></tr>
+                    <tr><td class="label-col">Email</td><td class="colon-col">:</td><td class="val-col">{{ $student->email }}</td></tr>
+                    <tr><td class="label-col">No. Handphone</td><td class="colon-col">:</td><td class="val-col">{{ $student->no_hp_peserta ?? '-' }}</td></tr>
+                    <tr><td class="label-col">Status Peserta</td><td class="colon-col">:</td><td class="val-col"><span style="background-color: #e74c3c; color: #fff; padding: 2px 6px; font-size: 8pt; font-weight: bold; border-radius: 3px;">{{ $student->status }}</span></td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- DATA PRIBADI --}}
-    <div class="section-title">DATA PRIBADI</div>
-    <div class="row"><div class="label">No. KTP (NIK)</div><div class="colon">:</div><div class="value">{{ $student->nomor_ktp ?? '-' }}</div></div>
-    <div class="row"><div class="label">Nomor KK</div><div class="colon">:</div><div class="value">{{ $student->nomor_kk ?? '-' }}</div></div>
-    <div class="row"><div class="label">Paspor / NPWP</div><div class="colon">:</div><div class="value">{{ $student->nomor_paspor ? 'Paspor: '.$student->nomor_paspor : '-' }} / {{ $student->nomor_npwp ? 'NPWP: '.$student->nomor_npwp : '-' }}</div></div>
-    <div class="row">
-        <div class="label">TTL</div><div class="colon">:</div>
-        <div class="value">{{ $student->tempat_lahir ?? '-' }}, {{ $student->tanggal_lahir ? \Carbon\Carbon::parse($student->tanggal_lahir)->isoFormat('D MMMM Y') : '-' }}</div>
-    </div>
-    <div class="row">
-        <div class="label">Jenis Kelamin</div><div class="colon">:</div>
-        <div class="value">{{ $student->jenis_kelamin }}</div>
-    </div>
-    <div class="row">
-        <div class="label">Gol. Darah / Agama</div><div class="colon">:</div>
-        <div class="value">{{ $student->golongan_darah ?? '-' }} / {{ $student->agama ?? '-' }}</div>
-    </div>
-    <div class="row">
-        <div class="label">Tinggi / Berat Badan</div><div class="colon">:</div>
-        <div class="value">{{ $student->tinggi_badan ?? '-' }} cm / {{ $student->berat_badan ?? '-' }} kg</div>
-    </div>
-    <div class="row">
-        <div class="label">Status Pernikahan</div><div class="colon">:</div>
-        <div class="value">{{ $student->status_pernikahan ?? '-' }}</div>
-    </div>
+    <div class="section-title">A. Data Pribadi</div>
+    <table class="data-table">
+        <tr>
+            <td class="label-col">Nomor KTP (NIK)</td><td class="colon-col">:</td><td class="val-col">{{ $student->nomor_ktp ?? '-' }}</td>
+            <td class="label-col" style="width:90px;">Nomor KK</td><td class="colon-col">:</td><td class="val-col">{{ $student->nomor_kk ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">Tempat, Tgl Lahir</td><td class="colon-col">:</td><td class="val-col">{{ $student->tempat_lahir ?? '-' }}, {{ $student->tanggal_lahir ? \Carbon\Carbon::parse($student->tanggal_lahir)->isoFormat('D MMMM Y') : '-' }}</td>
+            <td class="label-col">Jenis Kelamin</td><td class="colon-col">:</td><td class="val-col">{{ $student->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">Paspor / NPWP</td><td class="colon-col">:</td><td class="val-col">{{ $student->nomor_paspor ? 'Paspor: '.$student->nomor_paspor : '-' }} / {{ $student->nomor_npwp ? 'NPWP: '.$student->nomor_npwp : '-' }}</td>
+            <td class="label-col">Agama</td><td class="colon-col">:</td><td class="val-col">{{ $student->agama ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">Tinggi/Berat Badan</td><td class="colon-col">:</td><td class="val-col">{{ $student->tinggi_badan ?? '-' }} cm / {{ $student->berat_badan ?? '-' }} kg</td>
+            <td class="label-col">Gol. Darah</td><td class="colon-col">:</td><td class="val-col">{{ $student->golongan_darah ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">Status Pernikahan</td><td class="colon-col">:</td><td class="val-col" colspan="4">{{ $student->status_pernikahan ?? '-' }}</td>
+        </tr>
+    </table>
 
     {{-- ALAMAT --}}
-    <div class="section-title">ALAMAT</div>
-    <div class="row">
-        <div class="label">Alamat KTP</div><div class="colon">:</div>
-        <div class="value">
-            {{ $student->alamat_ktp ?? '-' }}<br>
-            {{ $student->kota_ktp ?? '' }} {{ $student->provinsi_ktp ? ', '.$student->provinsi_ktp : '' }}
-        </div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="label">Alamat Domisili</div><div class="colon">:</div>
-        <div class="value">{{ $student->alamat_domisili ?? '(Sama dengan KTP)' }}</div>
-    </div>
-    <div class="row">
-        <div class="label">No HP Orang Tua</div><div class="colon">:</div>
-        <div class="value">{{ $student->no_hp_ortu ?? '-' }}</div>
-    </div>
+    <div class="section-title">B. Alamat & Kontak Darurat</div>
+    <table class="data-table">
+        <tr>
+            <td class="label-col">Alamat Sesuai KTP</td><td class="colon-col">:</td>
+            <td class="val-col">{{ $student->alamat_ktp ?? '-' }}<br>{{ $student->kota_ktp ?? '' }} {{ $student->provinsi_ktp ? ', '.$student->provinsi_ktp : '' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">Alamat Domisili</td><td class="colon-col">:</td>
+            <td class="val-col">{{ $student->alamat_domisili ?? '(Sama dengan alamat KTP)' }}</td>
+        </tr>
+        <tr>
+            <td class="label-col">No. HP Orang Tua</td><td class="colon-col">:</td>
+            <td class="val-col">{{ $student->no_hp_ortu ?? '-' }}</td>
+        </tr>
+    </table>
 
-    {{-- RIWAYAT PENDIDIKAN --}}
-    <div class="section-title">RIWAYAT PENDIDIKAN</div>
-    <table>
+    {{-- PENDIDIKAN --}}
+    <div class="section-title">C. Riwayat Pendidikan</div>
+    <table class="list-table">
         <thead>
             <tr>
-                <th style="width: 50px;">Tingkat</th>
-                <th>Nama Institusi</th>
-                <th>Jurusan</th>
-                <th style="width: 60px;">Masuk</th>
-                <th style="width: 60px;">Lulus</th>
-                <th style="width: 40px;">Nilai</th>
+                <th style="width: 15%;">Tingkat</th>
+                <th style="width: 35%;">Nama Institusi</th>
+                <th style="width: 20%;">Jurusan</th>
+                <th style="width: 15%;">Tahun Lulus</th>
+                <th style="width: 15%;">Nilai</th>
             </tr>
         </thead>
         <tbody>
@@ -237,26 +204,25 @@
                     <td style="text-align: center;">{{ $edu->tingkat }}</td>
                     <td>{{ $edu->nama_institusi }}</td>
                     <td>{{ $edu->jurusan ?? '-' }}</td>
-                    <td style="text-align: center;">{{ $edu->tahun_masuk ?? '-' }}</td>
                     <td style="text-align: center;">{{ $edu->tahun_lulus ?? '-' }}</td>
                     <td style="text-align: center;">{{ $edu->nilai_rata_rata ?? '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" style="text-align: center; color: #777;">Belum ada data pendidikan</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: #7f8c8d;">Belum ada data riwayat pendidikan.</td></tr>
             @endforelse
         </tbody>
     </table>
 
-    {{-- DATA KELUARGA --}}
-    <div class="section-title">DATA KELUARGA</div>
-    <table>
+    {{-- KELUARGA --}}
+    <div class="section-title">D. Susunan Keluarga</div>
+    <table class="list-table">
         <thead>
             <tr>
-                <th style="width: 80px;">Hubungan</th>
-                <th>Nama Lengkap</th>
-                <th>L/P</th>
-                <th>Pekerjaan</th>
-                <th style="width: 40px;">Usia</th>
+                <th style="width: 15%;">Hubungan</th>
+                <th style="width: 35%;">Nama Lengkap</th>
+                <th style="width: 10%;">L/P</th>
+                <th style="width: 25%;">Pekerjaan</th>
+                <th style="width: 15%;">Usia</th>
             </tr>
         </thead>
         <tbody>
@@ -266,24 +232,24 @@
                     <td>{{ $fam->nama }}</td>
                     <td style="text-align: center;">{{ $fam->jenis_kelamin }}</td>
                     <td>{{ $fam->pekerjaan ?? '-' }}</td>
-                    <td style="text-align: center;">{{ $fam->usia ?? '-' }}</td>
+                    <td style="text-align: center;">{{ $fam->usia ? $fam->usia.' Thn' : '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" style="text-align: center; color: #777;">Belum ada data keluarga</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: #7f8c8d;">Belum ada data susunan keluarga.</td></tr>
             @endforelse
         </tbody>
     </table>
 
-    {{-- DATA PENGALAMAN --}}
+    {{-- PENGALAMAN --}}
     @if($student->pernah_bekerja)
-    <div class="section-title">PENGALAMAN KERJA / ORGANISASI</div>
-    <table>
+    <div class="section-title">E. Pengalaman Kerja / Organisasi</div>
+    <table class="list-table">
         <thead>
             <tr>
-                <th>Nama Instansi</th>
-                <th>Posisi</th>
-                <th style="width: 80px;">Mulai</th>
-                <th style="width: 80px;">Selesai</th>
+                <th style="width: 35%;">Nama Instansi</th>
+                <th style="width: 25%;">Posisi / Jabatan</th>
+                <th style="width: 20%;">Mulai</th>
+                <th style="width: 20%;">Selesai</th>
             </tr>
         </thead>
         <tbody>
@@ -295,28 +261,24 @@
                     <td style="text-align: center;">{{ $exp->tanggal_selesai ? \Carbon\Carbon::parse($exp->tanggal_selesai)->format('M Y') : '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="4" style="text-align: center; color: #777;">Belum ada data pengalaman</td></tr>
+                <tr><td colspan="4" style="text-align: center; color: #7f8c8d;">Belum ada data pengalaman.</td></tr>
             @endforelse
         </tbody>
     </table>
     @endif
 
     {{-- TANDA TANGAN --}}
-    <div style="margin-top: 40px; float: right; width: 220px; text-align: center; page-break-inside: avoid;">
-        <p>Dicetak Tanggal: {{ date('d F Y') }}</p>
-        
+    <div class="signature-box">
+        <p style="margin-bottom: 5px;">Dicetak Tanggal: {{ date('d F Y') }}</p>
+        <p style="margin-bottom: 10px;">Calon Peserta Pelatihan,</p>
         @if($student->signature)
-            <br>
             <img src="{{ asset('storage/'.$student->signature) }}" style="height: 60px; object-fit: contain;">
-            <br>
         @else
-            <br><br><br>
+            <div style="height: 60px;"></div>
         @endif
-        
-        <p style="border-top: 1px solid #000; font-weight: bold; display: inline-block; min-width: 150px; text-transform: uppercase;">
-            {{ $student->nama_lengkap }}
-        </p>
+        <div class="signature-name">{{ $student->nama_lengkap }}</div>
     </div>
+    <div class="clear"></div>
 
 </body>
 </html>
