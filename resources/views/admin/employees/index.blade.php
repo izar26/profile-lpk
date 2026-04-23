@@ -240,92 +240,7 @@
     </div>
 </div>
 
-{{-- ================= MODAL EDIT PEGAWAI ================= --}}
-<div id="modalEdit" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50 p-4">
-    <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-lg scale-90 opacity-0 transition-all duration-300">
-        <h2 class="text-xl font-bold text-gray-900 p-6 border-b border-gray-200">Edit Data Pegawai</h2>
-        <div id="edit-loading" class="hidden text-center py-10"><div class="loader mx-auto"></div></div>
 
-        <form id="formEdit" method="POST" enctype="multipart/form-data" class="hidden">
-            @csrf @method('PUT')
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-
-                {{-- FORM GRID --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Nama Lengkap</label>
-                            <input type="text" id="edit_nama" name="nama" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">NIP</label>
-                            <input type="text" id="edit_nip" name="nip" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                        <div>
-                            {{-- UPDATE: Nomor KTP --}}
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Nomor KTP (NIK)</label>
-                            <input type="text" id="edit_nomor_ktp" name="nomor_ktp" maxlength="16" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Jabatan</label>
-                            <input type="text" id="edit_jabatan" name="jabatan" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Email (Update Login)</label>
-                            <input type="email" id="edit_email" name="email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Telepon</label>
-                            <input type="text" id="edit_telepon" name="telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 font-medium text-gray-700">Status Kepegawaian</label>
-                            <select id="edit_status" name="status_kepegawaian" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300">
-                                <option value="Tetap">Tetap</option>
-                                <option value="Kontrak">Kontrak</option>
-                                <option value="Part-time">Part-time</option>
-                                <option value="Magang">Magang</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- ALAMAT DIPISAH --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat KTP</label>
-                        {{-- Perhatikan ID: edit_alamat_ktp --}}
-                        <textarea id="edit_alamat_ktp" name="alamat_ktp" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 font-medium text-gray-700">Alamat Domisili</label>
-                        {{-- Perhatikan ID: edit_alamat_domisili --}}
-                        <textarea id="edit_alamat_domisili" name="alamat_domisili" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-gold-300"></textarea>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm mb-1 font-medium text-gray-700">Ganti Foto</label>
-                    <div class="flex items-center gap-4">
-                        <img id="edit_foto_preview" src="" class="h-14 w-14 rounded-full object-cover border-2 border-gray-200 hidden">
-                        <div id="edit_foto_placeholder" class="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xl"><i class="fa-solid fa-user"></i></div>
-                        <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-300 transition">
-                            <i class="fa-solid fa-camera mr-2"></i> Ganti Foto
-                            <input name="foto" type="file" class="hidden" onchange="previewEditFoto(this)"/>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end p-6 bg-gray-50 border-t border-gray-200 rounded-b-lg gap-2">
-                <button type="button" onclick="closeModal('modalEdit')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-medium text-gray-700">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 font-semibold">Update</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {{-- MODAL HAPUS --}}
 <div id="modalHapus" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
@@ -407,59 +322,7 @@
         }
     }
 
-    // === 3. MODAL FUNCTIONS (LOAD EDIT UPDATED) ===
-    function loadEdit(id) {
-        openModal('modalEdit');
-        document.getElementById('edit-loading').classList.remove('hidden');
-        document.getElementById('formEdit').classList.add('hidden');
-
-        fetch(`/admin/employees/${id}/edit`)
-            .then(res => res.json())
-            .then(data => {
-                // UPDATE: Mapping ke kolom database baru
-                document.getElementById('edit_nama').value = data.nama;
-                document.getElementById('edit_nip').value = data.nip;
-                document.getElementById('edit_nomor_ktp').value = data.nomor_ktp; // Baru
-                document.getElementById('edit_jabatan').value = data.jabatan;
-                document.getElementById('edit_status').value = data.status_kepegawaian;
-                document.getElementById('edit_email').value = data.email;
-                document.getElementById('edit_telepon').value = data.telepon;
-
-                // UPDATE: Alamat Dipecah
-                document.getElementById('edit_alamat_ktp').value = data.alamat_ktp;
-                document.getElementById('edit_alamat_domisili').value = data.alamat_domisili;
-
-                const imgPreview = document.getElementById('edit_foto_preview');
-                const imgPlaceholder = document.getElementById('edit_foto_placeholder');
-                if (data.foto) {
-                    imgPreview.src = `/storage/${data.foto}`;
-                    imgPreview.classList.remove('hidden');
-                    imgPlaceholder.classList.add('hidden');
-                } else {
-                    imgPreview.src = '';
-                    imgPreview.classList.add('hidden');
-                    imgPlaceholder.classList.remove('hidden');
-                }
-
-                document.getElementById('formEdit').action = `/admin/employees/${id}`;
-                setTimeout(() => {
-                    document.getElementById('edit-loading').classList.add('hidden');
-                    document.getElementById('formEdit').classList.remove('hidden');
-                }, 400);
-            });
-    }
-
-    function previewEditFoto(input) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('edit_foto_preview').src = e.target.result;
-                document.getElementById('edit_foto_preview').classList.remove('hidden');
-                document.getElementById('edit_foto_placeholder').classList.add('hidden');
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
+    // === 3. MODAL FUNCTIONS ===
 
     function siapkanHapus(url, nama) {
         document.getElementById('formHapus').action = url;

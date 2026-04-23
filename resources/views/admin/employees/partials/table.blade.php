@@ -156,11 +156,11 @@
                                     </li>
                                     <div class="border-t border-gray-100 my-1"></div>
                                     <li>
-                                        <button onclick="loadEdit({{ $emp->id }})" @click="open = false"
+                                        <a href="{{ route('admin.employees.edit', $emp->id) }}"
                                             class="w-full text-left flex items-center px-4 py-2 hover:bg-gray-100 text-gray-700 transition">
                                             <i class="fa-solid fa-pen-to-square mr-2 w-5 text-center text-slate-600"></i>
                                             Edit
-                                        </button>
+                                        </a>
                                     </li>
                                     <li>
                                         <button onclick="siapkanHapus('{{ route('admin.employees.destroy', $emp) }}', '{{ addslashes($emp->nama) }}')" @click="open = false"

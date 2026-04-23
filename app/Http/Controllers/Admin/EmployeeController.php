@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\User;
 use App\Models\LpkProfile;
+use App\Models\EmployeeEducation;
+use App\Models\EmployeeFamily;
+use App\Models\EmployeeDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -99,11 +102,33 @@ class EmployeeController extends Controller
     public function update(Request $request, Employee $employee)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'nip' => 'nullable|string|unique:employees,nip,' . $employee->id,
-            'nomor_ktp' => 'nullable|string|max:16|unique:employees,nomor_ktp,' . $employee->id,
-            'email' => 'required|email|unique:employees,email,' . $employee->id,
-            'foto' => 'nullable|image|max:2048',
+            'nama'              => 'required|string|max:255',
+            'nip'               => 'nullable|string|unique:employees,nip,' . $employee->id,
+            'jabatan'           => 'required|string|max:100',
+            'nomor_ktp'         => 'nullable|string|max:16|unique:employees,nomor_ktp,' . $employee->id,
+            'nomor_kk'          => 'nullable|string|max:16',
+            'nomor_npwp'        => 'nullable|string|max:20',
+            'tempat_lahir'      => 'nullable|string|max:100',
+            'tanggal_lahir'     => 'nullable|date',
+            'jenis_kelamin'     => 'nullable|in:L,P',
+            'golongan_darah'    => 'nullable|string|max:5',
+            'agama'             => 'nullable|string|max:50',
+            'status_pernikahan' => 'nullable|string|max:50',
+            'tinggi_badan'      => 'nullable|numeric',
+            'berat_badan'       => 'nullable|numeric',
+
+            // Alamat & Kontak
+            'alamat_ktp'        => 'nullable|string',
+            'kota_ktp'          => 'nullable|string|max:100',
+            'provinsi_ktp'      => 'nullable|string|max:100',
+            'alamat_domisili'   => 'nullable|string',
+            'telepon'           => 'nullable|string|max:20',
+            'no_hp_keluarga_darurat' => 'nullable|string|max:20',
+            'email'             => 'required|email|unique:employees,email,' . $employee->id,
+            'instagram'         => 'nullable|string|max:255',
+
+            // Foto
+            'foto'              => 'nullable|image|max:2048',
         ]);
 
         DB::transaction(function () use ($request, $employee) {
@@ -165,11 +190,128 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Ambil data JSON untuk modal edit (Data Dasar).
+     * Tampilkan form edit pegawai.
      */
     public function edit(Employee $employee)
     {
-        return response()->json($employee);
+        $employee->load(['educations', 'families', 'documents']);
+        return view('admin.employees.edit', compact('employee'));
+    }
+
+    // ==================== RELATIONS CRUD ====================
+
+    public function storeEducation(Request $request, Employee $employee)
+    {
+        $request->validate([
+            'jenjang' => 'required|string',
+            'nama_sekolah' => 'required|string',
+            'tahun_lulus' => 'required|numeric',
+        ]);
+
+        EmployeeEducation::create([
+            'employee_id' => $employee->id,
+            'jenjang' => $request->jenjang,
+            'nama_sekolah' => $request->nama_sekolah,
+            'jurusan' => $request->jurusan,
+            'tahun_masuk' => $request->tahun_masuk,
+            'tahun_lulus' => $request->tahun_lulus,
+            'nilai_akhir' => $request->nilai_akhir,
+        ]);
+
+        return back()->with('success', 'Riwayat pendidikan ditambahkan.');
+    }
+
+    public function destroyEducation(Employee $employee, $id)
+    {
+        $edu = EmployeeEducation::where('id', $id)->where('employee_id', $employee->id)->firstOrFail();
+        $edu->delete();
+        return back()->with('success', 'Data pendidikan dihapus.');
+    }
+
+    public function storeFamily(Request $request, Employee $employee)
+    {
+        $request->validate([
+            'nama_lengkap' => 'required|string',
+            'hubungan' => 'required|string',
+        ]);
+
+        EmployeeFamily::create([
+            'employee_id' => $employee->id,
+            'nama_lengkap' => $request->nama_lengkap,
+            'hubungan' => $request->hubungan,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'pekerjaan' => $request->pekerjaan,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        return back()->with('success', 'Data keluarga ditambahkan.');
+    }
+
+    public function updateFamily(Request $request, Employee $employee, $id)
+    {
+        $request->validate([
+            'nama_lengkap' => 'required|string',
+            'hubungan' => 'required|string',
+        ]);
+
+        $family = EmployeeFamily::where('id', $id)
+                    ->where('employee_id', $employee->id)
+                    ->firstOrFail();
+
+        $family->update([
+            'nama_lengkap' => $request->nama_lengkap,
+            'hubungan' => $request->hubungan,
+            'nik' => $request->nik,
+            'tempat_lahir' => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'pekerjaan' => $request->pekerjaan,
+            'no_hp' => $request->no_hp,
+        ]);
+
+        return back()->with('success', 'Data keluarga diperbarui.');
+    }
+
+    public function destroyFamily(Employee $employee, $id)
+    {
+        $fam = EmployeeFamily::where('id', $id)->where('employee_id', $employee->id)->firstOrFail();
+        $fam->delete();
+        return back()->with('success', 'Data keluarga dihapus.');
+    }
+
+    public function storeDocument(Request $request, Employee $employee)
+    {
+        $request->validate([
+            'nama_dokumen' => 'required|string|max:255',
+            'file_dokumen' => 'required|file|max:5120',
+        ]);
+
+        DB::transaction(function () use ($request, $employee) {
+            $path = $request->file('file_dokumen')->store('employee_documents', 'public');
+
+            EmployeeDocument::create([
+                'employee_id' => $employee->id,
+                'nama_dokumen' => $request->nama_dokumen,
+                'file_path' => $path,
+            ]);
+        });
+
+        return back()->with('success', 'Dokumen berhasil diunggah.');
+    }
+
+    public function destroyDocument(Employee $employee, $id)
+    {
+        $doc = EmployeeDocument::where('id', $id)->where('employee_id', $employee->id)->firstOrFail();
+
+        DB::transaction(function () use ($doc) {
+            if (Storage::disk('public')->exists($doc->file_path)) {
+                Storage::disk('public')->delete($doc->file_path);
+            }
+            $doc->delete();
+        });
+
+        return back()->with('success', 'Dokumen dihapus.');
     }
 
     /**

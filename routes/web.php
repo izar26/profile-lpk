@@ -114,6 +114,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
         // Account
         Route::post('/generate-account/{employee}', 'generateAccount')->name('generate-account');
+
+        // Relations CRUD
+        Route::post('/{employee}/education', 'storeEducation')->name('education.store');
+        Route::delete('/{employee}/education/{id}', 'destroyEducation')->name('education.destroy');
+
+        Route::post('/{employee}/family', 'storeFamily')->name('family.store');
+        Route::put('/{employee}/family/{id}', 'updateFamily')->name('family.update');
+        Route::delete('/{employee}/family/{id}', 'destroyFamily')->name('family.destroy');
+
+        Route::post('/{employee}/document', 'storeDocument')->name('document.store');
+        Route::delete('/{employee}/document/{id}', 'destroyDocument')->name('document.destroy');
     });
     Route::resource('employees', EmployeeController::class)->names('employees');
 });
