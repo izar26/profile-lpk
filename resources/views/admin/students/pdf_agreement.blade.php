@@ -300,12 +300,23 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td class="text-center">1</td><td>Biaya Pendaftaran</td><td class="text-right">Rp. 100.000,-</td></tr>
-                <tr><td class="text-center">2</td><td>Modul dan Bahan ajar Pelatihan</td><td class="text-right">Rp. 2.000.000,-</td></tr>
-                <tr><td class="text-center">3</td><td>Seragam</td><td class="text-right">Rp. 400.000,-</td></tr>
-                <tr><td class="text-center">4</td><td>Fasilitas pembelajaran dan Pendampingan selama 6 Bulan / Sampai Lulus N4</td><td class="text-right">Rp. 5.500.000,-</td></tr>
-                <tr><td class="text-center">5</td><td>Modul Pembelajaran Keahlian khusus</td><td class="text-right">Rp. 1.000.000,-</td></tr>
-                <tr><td colspan="2" class="text-right text-bold">TOTAL</td><td class="text-right text-bold">Rp. 9.000.000,-</td></tr>
+                @php $totalFee = 0; @endphp
+                @forelse($feeComponents as $index => $fee)
+                    @php $totalFee += $fee->amount; @endphp
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $fee->name }}</td>
+                        <td class="text-right">Rp. {{ number_format($fee->amount, 0, ',', '.') }},-</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center text-gray-400">Belum ada rincian biaya yang diatur.</td>
+                    </tr>
+                @endforelse
+                <tr>
+                    <td colspan="2" class="text-right text-bold">TOTAL</td>
+                    <td class="text-right text-bold">Rp. {{ number_format($totalFee, 0, ',', '.') }},-</td>
+                </tr>
             </tbody>
         </table>
 

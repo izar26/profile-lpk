@@ -64,6 +64,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('document-types', RefDocumentTypeController::class)->names('document-types');
+    Route::resource('fee-components', \App\Http\Controllers\Admin\FeeComponentController::class)->except(['create', 'show', 'edit']);
 
     // LPK Profile
     Route::get('/lpk-profile', [LpkProfileController::class, 'edit'])->name('lpk-profile.edit');

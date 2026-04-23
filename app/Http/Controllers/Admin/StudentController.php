@@ -492,9 +492,11 @@ $documentTypes = RefDocumentType::where('is_active', true)->orderBy('id', 'asc')
         // Pastikan setting locale ID di AppServiceProvider atau .env sudah 'id'
         Carbon::setLocale('id');
         $tanggalSurat = Carbon::now()->translatedFormat('d F Y');
+        
+        $feeComponents = \App\Models\FeeComponent::orderBy('id', 'asc')->get();
 
         // 3. Load View PDF
-        $pdf = Pdf::loadView('admin.students.pdf_agreement', compact('student', 'profile', 'tanggalSurat'))
+        $pdf = Pdf::loadView('admin.students.pdf_agreement', compact('student', 'profile', 'feeComponents', 'tanggalSurat'))
                   ->setPaper('a4', 'portrait');
 
         // 4. Download atau Stream (Preview)
