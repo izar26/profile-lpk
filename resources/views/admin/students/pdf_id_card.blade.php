@@ -202,7 +202,7 @@
                 {{-- INFO SISWA --}}
                 <div class="info-section">
                     {{-- Nama --}}
-                    <div class="nama-siswa">{{ Str::limit($student->nama_lengkap, 25) }}</div>
+                    <div class="nama-siswa">{{ $student->nama_lengkap }}</div>
                     
                     {{-- Jabatan Wrapper (Diganti text SISWA agar layout sama persis) --}}
                     <div class="jabatan-wrapper">

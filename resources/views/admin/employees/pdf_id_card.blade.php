@@ -198,7 +198,7 @@
 
                 {{-- INFO PEGAWAI --}}
                 <div class="info-section">
-                    <div class="nama-pegawai">{{ \Illuminate\Support\Str::limit($emp->nama, 25) }}</div>
+                    <div class="nama-pegawai">{{ $emp->nama }}</div>
 
                     <div class="jabatan-wrapper">
                         <div class="jabatan-badge">{{ $emp->jabatan }}</div>
