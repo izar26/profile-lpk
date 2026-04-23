@@ -87,7 +87,7 @@
         
         /* Signature */
         .signature-box { float: right; width: 250px; text-align: center; margin-top: 40px; }
-        .signature-name { font-weight: bold; text-decoration: underline; margin-top: 60px; text-transform: uppercase; }
+        .signature-name { font-weight: bold; text-decoration: underline; margin-top: 5px; text-transform: uppercase; }
         .clear { clear: both; }
     </style>
 </head>
