@@ -65,15 +65,15 @@
         /* FOTO */
         .photo-wrapper {
             position: absolute;
-            top: 16mm;
+            top: 14mm;
             left: 0;
             width: 100%;
             text-align: center;
             z-index: 5;
         }
         .photo-circle {
-            width: 26mm;
-            height: 26mm;
+            width: 25mm;
+            height: 25mm;
             background: #fff;
             border-radius: 50%;
             border: 3px solid #fff;
@@ -88,7 +88,7 @@
         /* INFO PEGAWAI */
         .info-section {
             position: absolute;
-            top: 46mm;
+            top: 42mm;
             left: 0; right: 0;
             width: 100%;
             text-align: center;
@@ -100,7 +100,7 @@
 
         .nama-pegawai {
             font-weight: bold;
-            font-size: 10pt;
+            font-size: 9pt;
             text-transform: uppercase;
             margin-bottom: 3px;
             line-height: 1.2;
@@ -146,7 +146,7 @@
         /* QR CODE */
         .qr-section {
             position: absolute;
-            bottom: 3mm;
+            bottom: 2mm;
             width: 100%;
             text-align: center;
             z-index: 5;

@@ -66,15 +66,15 @@
         /* FOTO */
         .photo-wrapper { 
             position: absolute; 
-            top: 14mm; 
+            top: 13mm; 
             left: 0; 
             width: 100%; 
             text-align: center; 
             z-index: 5; 
         }
         .photo-circle { 
-            width: 28mm; 
-            height: 28mm; 
+            width: 25mm; 
+            height: 25mm; 
             background: #fff; 
             border-radius: 50%; 
             border: 3px solid #fff; 
@@ -89,7 +89,7 @@
         /* INFO SISWA (Layout Persis Pegawai) */
         .info-section { 
             position: absolute; 
-            top: 45mm; 
+            top: 41mm; 
             left: 0;
             right: 0;
             width: 100%; 
@@ -102,7 +102,7 @@
         
         .nama-siswa { 
             font-weight: bold; 
-            font-size: 10pt; 
+            font-size: 9pt; 
             text-transform: uppercase; 
             margin-bottom: 4px; 
             line-height: 1.2; 
@@ -150,19 +150,19 @@
         /* QR CODE */
         .qr-section { 
             position: absolute; 
-            bottom: 3mm; 
+            bottom: 2mm; 
             width: 100%; 
             text-align: center; 
             z-index: 5; 
         }
         .qr-box { 
             background: white; 
-            padding: 2mm; 
+            padding: 1.5mm; 
             display: inline-block; 
             border-radius: 4px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
         }
-        .qr-img { width: 16mm; height: 16mm; display: block; }
+        .qr-img { width: 14mm; height: 14mm; display: block; }
     </style>
 </head>
 <body>
