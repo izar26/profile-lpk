@@ -54,10 +54,10 @@
         </div>
     </div>
 
-</div> 
+</div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    
+
     <div class="lg:col-span-2">
         <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-gray-100">
             <div class="p-8">
@@ -68,18 +68,10 @@
                     <h3 class="font-serif text-2xl font-bold text-gray-900">Selamat Datang, Admin!</h3>
                 </div>
                 <p class="text-gray-600 leading-relaxed">
-                    Anda berada di panel kontrol utama <strong>{{ config('app.name', 'LPK Profile') }}</strong>. 
+                    Anda berada di panel kontrol utama <strong>{{ config('app.name', 'LPK Profile') }}</strong>.
                     Dari sini Anda dapat mengelola seluruh data akademik, administrasi pegawai, serta konten website publik.
                 </p>
                 
-                <div class="mt-6 flex flex-wrap gap-3">
-                    <a href="{{ route('admin.students.create') }}" onclick="event.preventDefault(); openModal('modalTambahSiswa')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">
-                        + Siswa Baru
-                    </a>
-                    <a href="{{ route('admin.employees.create') }}" onclick="event.preventDefault(); openModal('modalTambahPegawai')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">
-                        + Pegawai Baru
-                    </a>
-                </div>
             </div>
         </div>
     </div>
