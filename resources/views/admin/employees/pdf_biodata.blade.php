@@ -192,6 +192,10 @@
         <div class="value">{{ $employee->golongan_darah ?? '-' }} / {{ $employee->agama ?? '-' }}</div>
     </div>
     <div class="row">
+        <div class="label">Tinggi / Berat Badan</div><div class="colon">:</div>
+        <div class="value">{{ $employee->tinggi_badan ?? '-' }} cm / {{ $employee->berat_badan ?? '-' }} kg</div>
+    </div>
+    <div class="row">
         <div class="label">Status Pernikahan</div><div class="colon">:</div>
         <div class="value">{{ $employee->status_pernikahan ?? '-' }}</div>
     </div>

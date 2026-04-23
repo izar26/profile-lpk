@@ -423,7 +423,7 @@ class StudentController extends Controller
         $pdf = Pdf::loadView('admin.students.pdf_biodata', compact('student', 'profile'))
                   ->setPaper('a4', 'portrait');
 
-        return $pdf->download('Bukti-Seleksi-'. \Str::slug($student->nama_lengkap) .'.pdf');
+        return $pdf->download('biodata-siswa-'. \Str::slug($student->nama_lengkap) .'.pdf');
     }
 
     // --- LOGIKA VERIFIKASI ---
