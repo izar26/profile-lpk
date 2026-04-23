@@ -104,9 +104,17 @@
                                 toggle() {
                                     this.open = !this.open;
                                     if (this.open) {
-                                        const rect = $refs.btn.getBoundingClientRect();
-                                        this.top = rect.bottom;
-                                        this.left = rect.right - 192;
+                                        this.$nextTick(() => {
+                                            const btnRect = this.$refs.btn.getBoundingClientRect();
+                                            const dropRect = this.$refs.dropdown.getBoundingClientRect();
+                                            
+                                            if (btnRect.bottom + dropRect.height > window.innerHeight) {
+                                                this.top = btnRect.top - dropRect.height;
+                                            } else {
+                                                this.top = btnRect.bottom;
+                                            }
+                                            this.left = btnRect.right - dropRect.width;
+                                        });
                                     }
                                 }
                              }"
@@ -119,7 +127,7 @@
                                 <i class="fa-solid fa-caret-down ml-1"></i>
                             </button>
 
-                            <div x-show="open"
+                            <div x-ref="dropdown" x-show="open"
                                  x-transition:enter="transition ease-out duration-100"
                                  x-transition:enter-start="transform opacity-0 scale-95"
                                  x-transition:enter-end="transform opacity-100 scale-100"

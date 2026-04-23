@@ -870,13 +870,13 @@
 
                     // 4. Konfirmasi SweetAlert
                     Swal.fire({
-                        title: 'Simpan Formulir?',
-                        html: "Pastikan data Anda sudah benar.<br>Data akan masuk ke proses verifikasi.",
+                        title: 'Simpan Perubahan?',
+                        html: "Pastikan data siswa sudah benar dan lengkap.",
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#d97706',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'Ya, Kirim Data!',
+                        confirmButtonText: 'Ya, Simpan Data!',
                         cancelButtonText: 'Batal, Cek Lagi'
                     }).then((result) => {
                         if (result.isConfirmed) {
