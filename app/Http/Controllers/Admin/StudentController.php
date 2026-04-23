@@ -190,6 +190,7 @@ class StudentController extends Controller
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'nomor_ktp' => 'nullable|string|unique:students,nomor_ktp,' . $student->id,
+            'nomor_kk' => 'nullable|string',
             'email' => 'required|email|unique:students,email,' . $student->id,
             'program_pelatihan_id' => 'nullable|exists:program_pelatihans,id',
             'participant_number' => ['nullable', 'string', 'regex:/^HGS/', 'unique:students,participant_number,' . $student->id],
@@ -205,7 +206,7 @@ class StudentController extends Controller
 
             // A. Data Diri
             $data = $request->only([
-                'nama_lengkap', 'nomor_ktp', 'program_pelatihan_id', 'email',
+                'nama_lengkap', 'nomor_ktp', 'nomor_kk', 'program_pelatihan_id', 'email',
                 'no_hp_peserta', 'status', 'alamat_domisili', 'participant_number',
                 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'tinggi_badan', 
                 'berat_badan', 'golongan_darah', 'agama', 'status_pernikahan', 
