@@ -271,8 +271,8 @@
     <div class="signature-box">
         <p style="margin-bottom: 5px;">Dicetak Tanggal: {{ date('d F Y') }}</p>
         <p style="margin-bottom: 10px;">Calon Peserta Pelatihan,</p>
-        @if($student->signature)
-            <img src="{{ asset('storage/'.$student->signature) }}" style="height: 60px; object-fit: contain;">
+        @if($student->signature && $sigImage = imageToBase64($student->signature))
+            <img src="{{ $sigImage }}" style="height: 60px; object-fit: contain;">
         @else
             <div style="height: 60px;"></div>
         @endif
