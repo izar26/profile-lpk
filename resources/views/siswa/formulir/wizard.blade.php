@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
-@section('header', 'Formulir Pendaftaran Siswa')
+@php
+    $isAccepted = in_array($student->status ?? '', ['Wawancara', 'Pelatihan', 'Magang', 'Kerja', 'Alumni']);
+@endphp
+@section('header', $isAccepted ? 'Data Profil Siswa' : 'Formulir Pendaftaran Siswa')
 
 @section('content')
 
@@ -41,6 +44,7 @@
     {{-- --- CEK STATUS READ ONLY --- --}}
     @php
         $isEditable = !in_array($student->status, ['Menunggu Verifikasi', 'Ditolak']);
+        $isAccepted = in_array($student->status, ['Wawancara', 'Pelatihan', 'Magang', 'Kerja', 'Alumni']);
     @endphp
 
     @if(!$isEditable)
@@ -650,25 +654,13 @@
                             </p>
                         </div>
 
-                        <div class="mt-8 flex justify-center">
-                            {{-- Spinner Loading (Alpine) --}}
-                            <div x-show="isSubmitting" class="flex flex-col items-center">
-                                <svg class="animate-spin h-10 w-10 text-gold-600 mb-2" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                                    </circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                                <span class="text-gray-500 font-bold text-sm">Sedang Mengirim Data...</span>
-                            </div>
-
-                            {{-- Tombol Submit --}}
-                            <button type="submit" x-show="!isSubmitting" @click="submitForm($event)"
-                                class="bg-gradient-to-r from-gold-500 to-gold-700 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition transform flex items-center">
-                                <i class="fa-solid fa-paper-plane mr-3"></i> SIMPAN FORMULIR
-                            </button>
+                    @if($isEditable)
+                        <div class="mt-12 bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                            <p class="text-sm text-yellow-800">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                Dengan menekan tombol simpan, saya menyatakan data yang saya isi adalah benar dan dapat
+                                dipertanggungjawabkan.
+                            </p>
                         </div>
                     @endif
                 </div>
@@ -676,18 +668,40 @@
             </fieldset>
 
             {{-- 3. BOTTOM NAVIGATION --}}
-            <div class="flex justify-between mt-12 pt-6 border-t border-gray-100">
+            <div class="flex flex-wrap items-center justify-between mt-12 pt-6 border-t border-gray-100 gap-4">
                 <button type="button" x-show="step > 1" @click="prevStep()"
                     class="flex items-center text-gray-500 hover:text-gray-800 font-bold px-6 py-3 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Sebelumnya
                 </button>
+                <div x-show="step === 1" class="w-32 hidden sm:block"></div>
 
-                <div class="flex-1"></div>
+                @if($isEditable)
+                    <div class="flex-1 flex justify-center order-last sm:order-none w-full sm:w-auto mt-4 sm:mt-0" 
+                         x-show="isAccepted || (!isAccepted && step === 5)">
+                        {{-- Spinner Loading (Alpine) --}}
+                        <div x-show="isSubmitting" class="flex flex-col items-center">
+                            <svg class="animate-spin h-6 w-6 text-gold-600 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-gray-500 font-bold text-xs">Menyimpan...</span>
+                        </div>
+
+                        {{-- Tombol Submit --}}
+                        <button type="submit" x-show="!isSubmitting" @click="submitForm($event)"
+                            class="bg-gradient-to-r from-gold-500 to-gold-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition transform flex items-center w-full justify-center sm:w-auto">
+                            <i class="fa-solid fa-save mr-2"></i> SIMPAN FORMULIR
+                        </button>
+                    </div>
+                @else
+                    <div class="flex-1"></div>
+                @endif
 
                 <button type="button" x-show="step < 5" @click="nextStep()"
-                    class="flex items-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30">
+                    class="flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30">
                     Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
+                <div x-show="step === 5" class="w-32 hidden sm:block"></div>
             </div>
         </form>
     </div>
@@ -720,6 +734,7 @@
     ) : 1 }},
 
                 pernahBekerja: {{ old('pernah_bekerja', $student->pernah_bekerja) ? 'true' : 'false' }},
+                isAccepted: {{ $isAccepted ? 'true' : 'false' }},
                 isSubmitting: false,
                 signaturePad: null,
 
@@ -774,10 +789,17 @@
                 },
 
                 goToStep(targetStep) {
+                    if (this.isAccepted) {
+                        this.step = targetStep;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+
                     // Hanya boleh lompat ke step yang sudah dilewati atau next step (+1)
                     // Tapi untuk kemudahan edit, kita izinkan klik step sebelumnya kapan saja
                     if (targetStep < this.step) {
                         this.step = targetStep;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                     } else if (targetStep === this.step + 1) {
                         this.nextStep();
                     }
